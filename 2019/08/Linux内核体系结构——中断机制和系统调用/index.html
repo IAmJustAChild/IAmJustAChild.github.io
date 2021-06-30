@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Linux内核体系结构 ##　中断机制  中断操作原理 外设向处理器提出服务请求时，处理器会在执行完一条指令后立刻应答设备请求，转而执行该设备的相关服务程序。服务程序执行完成后，处理器会接着做之前被中断的请求。 设备向处理器发出的服务请求称为 中断请求 IRQ，处理器相应请求而执行的设备相关程序则被称为中断服务程序，或者终端服务过程 ISR（Interrupt Service Routine）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Linux 0.12】Linux内核体系结构——Linux的内核管理">
+<meta property="og:url" content="https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/index.html">
+<meta property="og:site_name" content="Amjac 的博客">
+<meta property="og:description" content="Linux内核体系结构 ##　中断机制  中断操作原理 外设向处理器提出服务请求时，处理器会在执行完一条指令后立刻应答设备请求，转而执行该设备的相关服务程序。服务程序执行完成后，处理器会接着做之前被中断的请求。 设备向处理器发出的服务请求称为 中断请求 IRQ，处理器相应请求而执行的设备相关程序则被称为中断服务程序，或者终端服务过程 ISR（Interrupt Service Routine）。">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2019-08-18T06:36:22.000Z">
+<meta property="article:modified_time" content="2021-06-30T09:15:20.081Z">
+<meta property="article:author" content="Amjac">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>【Linux 0.12】Linux内核体系结构——Linux的内核管理</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post " href="/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94Linux%E5%86%85%E6%A0%B8%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post " href="/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94Linux%E5%86%85%E6%A0%B8%E6%A8%A1%E5%BC%8F%E4%B8%8E%E4%BD%93%E7%B3%BB/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&text=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&title=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&is_video=false&description=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【Linux 0.12】Linux内核体系结构——Linux的内核管理&body=Check out this article: https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&title=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&title=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&title=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&title=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&name=【Linux 0.12】Linux内核体系结构——Linux的内核管理&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&t=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84"><span class="toc-number">1.</span> <span class="toc-text"> Linux内核体系结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E6%96%AD%E6%93%8D%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-number">1.0.1.</span> <span class="toc-text"> 中断操作原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E6%96%AD%E5%90%91%E9%87%8F%E8%A1%A8"><span class="toc-number">1.0.2.</span> <span class="toc-text"> 中断向量表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#linux-%E5%86%85%E6%A0%B8%E7%9A%84%E4%B8%AD%E6%96%AD%E5%A4%84%E7%90%86%E8%BF%87%E7%A8%8B"><span class="toc-number">1.0.3.</span> <span class="toc-text"> Linux 内核的中断处理过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#linux-%E7%9A%84%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-number">1.1.</span> <span class="toc-text"> Linux 的系统调用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.1.1.</span> <span class="toc-text"> 系统调用接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E5%A4%84%E7%90%86%E8%BF%87%E7%A8%8B"><span class="toc-number">1.1.2.</span> <span class="toc-text"> 系统调用处理过程</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        【Linux 0.12】Linux内核体系结构——Linux的内核管理
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Amjac</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-08-18T06:36:22.000Z" itemprop="datePublished">2019-08-18</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/Linux%E5%AD%A6%E4%B9%A0/">Linux学习</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Linux/" rel="tag">Linux</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="linux内核体系结构"><a class="markdownIt-Anchor" href="#linux内核体系结构"></a> Linux内核体系结构</h1>
+<p>##　中断机制</p>
+<h3 id="中断操作原理"><a class="markdownIt-Anchor" href="#中断操作原理"></a> 中断操作原理</h3>
+<p>外设向处理器提出服务请求时，处理器会在执行完一条指令后立刻应答设备请求，转而执行该设备的相关服务程序。服务程序执行完成后，处理器会接着做之前被中断的请求。</p>
+<p>设备向处理器发出的服务请求称为 中断请求 IRQ，处理器相应请求而执行的设备相关程序则被称为中断服务程序，或者终端服务过程 ISR（Interrupt Service Routine）。</p>
+<p>可编程中断控制器（Programmable Interrrupt COntroller, PIC）时微机系统中管理设备中断请求的管理者。它通过连接到设备的中断请求引脚接受设备发出的中断服务请求信号。</p>
+<p>以上是硬件中断，但终端方法并非必须和硬件相关。软件使用 int 指令，也可以让处理器执行相应的中断处理过程。</p>
+<h3 id="中断向量表"><a class="markdownIt-Anchor" href="#中断向量表"></a> 中断向量表</h3>
+<p>CPU 根据中断号获取中断向量值（即中断服务程序的入口地址）。为了让 CPU 由中断号找到对应的中断向量，就需要在内存中建立一张查询表，即中断向量表。</p>
+<p>在实模式下，每个中断向量 4Byte，指明中断服务程序的段值，以及段内偏移。由于共 256 个向量，所以中断向量表位 1KB。x86机器启动时，ROM BIOS 中的程序会在物理内存的起始地址初始化并设置中断向量表，而各中断的默认中断服务程序则在 BIOS 中给出。由于中断向量表中的向量是按照中断号顺序排列，因此给定一个中断号 N ，他对应的中断向量在内存的位置就是 0x0000:N*4。</p>
+<p>在保护模式下，需要使用中段描述符表 IDT 来管理中断或异常。每个中断描述符项保存了中断服务程序的地址，还有特权级和描述符类别等信息。</p>
+<h3 id="linux-内核的中断处理过程"><a class="markdownIt-Anchor" href="#linux-内核的中断处理过程"></a> Linux 内核的中断处理过程</h3>
+<p>每个中断由 0~255 之间的一个数字标识。对于中断 int0~0x1f ，Intel公司固定或保留用，属于软件中断，但 Intel 称之为异常。（通常还可以分为故障和陷阱）</p>
+<p>中断 int0x20~0xff 可以由用户自行设定。</p>
+<p>在 Linux 中，int0x20~0x2f 用于 8259A 终端控制芯片发出的硬件中断。<strong>程序编程发出的系统调用中断设置为 int0x80。</strong> 系统调用中断是用户使用操作系统资源的唯一界面接口。</p>
+<p>在系统初始化时，内核在 head.s 程序中首先使用一个哑中断向量/中断描述符 对中断描述符表的 256 项进行默认设置。这个哑中断向量指向一个默认的“无中断”处理过程。</p>
+<h2 id="linux-的系统调用"><a class="markdownIt-Anchor" href="#linux-的系统调用"></a> Linux 的系统调用</h2>
+<h3 id="系统调用接口"><a class="markdownIt-Anchor" href="#系统调用接口"></a> 系统调用接口</h3>
+<p>系统调用（syscall）接口是 Linux 内核与上层应用程序进行交互通信的唯一接口。通过在 EAX 寄存器指定系统调用功能号，可以使用内核资源，包括系统硬件资源。</p>
+<p>系统调用执行的返回值，一般 0 表示成功，出错的情况下错误类型码存放在全局变量 errno 中。</p>
+<h3 id="系统调用处理过程"><a class="markdownIt-Anchor" href="#系统调用处理过程"></a> 系统调用处理过程</h3>
+<p>32 位架构下，系统调用的参数保存在 EBX，ECX，EDX 中。</p>
+<p>处理系统调用的过程是程序 kernel/system_call.s 中的 system_call 。</p>
+<p>内核代码 include/unistd.h 中定义了宏函数 <code>_syscalln()</code> ，其中 n 代表了参数的个数。由于只实现了 0~3，所以最多直接传递 3 个参数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __library</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">_syscall3(<span class="keyword">int</span>, read, <span class="keyword">int</span>, fd, <span class="keyword">char</span>*, buf, <span class="keyword">int</span>, n)</span><br></pre></td></tr></table></figure>
+<p>上述代码即可用 <code>_syscall3</code> 执行系统调用 read。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84"><span class="toc-number">1.</span> <span class="toc-text"> Linux内核体系结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E6%96%AD%E6%93%8D%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-number">1.0.1.</span> <span class="toc-text"> 中断操作原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E6%96%AD%E5%90%91%E9%87%8F%E8%A1%A8"><span class="toc-number">1.0.2.</span> <span class="toc-text"> 中断向量表</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#linux-%E5%86%85%E6%A0%B8%E7%9A%84%E4%B8%AD%E6%96%AD%E5%A4%84%E7%90%86%E8%BF%87%E7%A8%8B"><span class="toc-number">1.0.3.</span> <span class="toc-text"> Linux 内核的中断处理过程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#linux-%E7%9A%84%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-number">1.1.</span> <span class="toc-text"> Linux 的系统调用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E6%8E%A5%E5%8F%A3"><span class="toc-number">1.1.1.</span> <span class="toc-text"> 系统调用接口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E5%A4%84%E7%90%86%E8%BF%87%E7%A8%8B"><span class="toc-number">1.1.2.</span> <span class="toc-text"> 系统调用处理过程</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&text=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&title=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&is_video=false&description=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【Linux 0.12】Linux内核体系结构——Linux的内核管理&body=Check out this article: https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&title=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&title=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&title=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&title=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&name=【Linux 0.12】Linux内核体系结构——Linux的内核管理&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E6%9C%BA%E5%88%B6%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8/&t=【Linux 0.12】Linux内核体系结构——Linux的内核管理"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Amjac
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

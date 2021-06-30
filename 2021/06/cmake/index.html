@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="CMake 教程 来自知乎的推荐： ttroy50&#x2F;cmake-examples: Useful CMake Examples (github.com)  01-basic  A-hello-cmake 基本的 Helloworld 示例。 12345$ tree .├── CMakeLists.txt├── main.cpp└── README.adoc 12345678910# Set th">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【工具】CMake学习">
+<meta property="og:url" content="https://iamjustachild.github.io/2021/06/cmake/index.html">
+<meta property="og:site_name" content="Amjac 的博客">
+<meta property="og:description" content="CMake 教程 来自知乎的推荐： ttroy50&#x2F;cmake-examples: Useful CMake Examples (github.com)  01-basic  A-hello-cmake 基本的 Helloworld 示例。 12345$ tree .├── CMakeLists.txt├── main.cpp└── README.adoc 12345678910# Set th">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2021-06-08T09:23:44.190Z">
+<meta property="article:modified_time" content="2021-06-30T09:25:13.259Z">
+<meta property="article:author" content="Amjac">
+<meta property="article:tag" content="cmake">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>【工具】CMake学习</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post " href="/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post " href="/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2021/06/cmake/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2021/06/cmake/&text=【工具】CMake学习"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2021/06/cmake/&title=【工具】CMake学习"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2021/06/cmake/&is_video=false&description=【工具】CMake学习"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【工具】CMake学习&body=Check out this article: https://iamjustachild.github.io/2021/06/cmake/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2021/06/cmake/&title=【工具】CMake学习"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2021/06/cmake/&title=【工具】CMake学习"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2021/06/cmake/&title=【工具】CMake学习"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2021/06/cmake/&title=【工具】CMake学习"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2021/06/cmake/&name=【工具】CMake学习&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2021/06/cmake/&t=【工具】CMake学习"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#cmake-%E6%95%99%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text"> CMake 教程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#01-basic"><span class="toc-number">1.1.</span> <span class="toc-text"> 01-basic</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#a-hello-cmake"><span class="toc-number">1.1.1.</span> <span class="toc-text"> A-hello-cmake</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#b-hello-headers"><span class="toc-number">1.1.2.</span> <span class="toc-text"> B-hello-headers</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9B%AE%E5%BD%95%E8%B7%AF%E5%BE%84"><span class="toc-number">1.1.2.1.</span> <span class="toc-text"> 目录路径</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%BA%90%E6%96%87%E4%BB%B6%E5%8F%98%E9%87%8F"><span class="toc-number">1.1.2.2.</span> <span class="toc-text"> 源文件变量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#tip"><span class="toc-number">1.1.2.3.</span> <span class="toc-text"> Tip</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BC%95%E7%94%A8%E7%9B%AE%E5%BD%95"><span class="toc-number">1.1.2.4.</span> <span class="toc-text"> 引用目录</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E8%AF%91"><span class="toc-number">1.1.2.5.</span> <span class="toc-text"> 编译</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#make-%E5%86%97%E4%BD%99%E8%BE%93%E5%87%BAverbose-output"><span class="toc-number">1.1.2.6.</span> <span class="toc-text"> make 冗余输出（Verbose Output）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#c-static-library"><span class="toc-number">1.1.3.</span> <span class="toc-text"> C-static-library</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%85%E5%A1%AB%E5%BC%95%E7%94%A8%E7%9B%AE%E5%BD%95"><span class="toc-number">1.1.3.1.</span> <span class="toc-text"> 充填引用目录</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#tip-2"><span class="toc-number">1.1.3.2.</span> <span class="toc-text"> Tip</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%93%BE%E6%8E%A5%E5%88%B0%E4%B8%80%E4%B8%AA%E5%BA%93"><span class="toc-number">1.1.3.3.</span> <span class="toc-text"> 链接到一个库</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#d-shared-library"><span class="toc-number">1.1.4.</span> <span class="toc-text"> D-shared-library</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0%E4%B8%80%E4%B8%AA%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%BA%93%E5%85%B1%E4%BA%AB%E5%BA%93"><span class="toc-number">1.1.4.1.</span> <span class="toc-text"> 添加一个动态链接库（共享库）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%AB%E5%90%8D%E7%9B%AE%E6%A0%87alias-target"><span class="toc-number">1.1.4.2.</span> <span class="toc-text"> 别名目标（Alias Target）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%86%E7%9B%AE%E6%A0%87%E7%A8%8B%E5%BA%8F%E9%93%BE%E6%8E%A5%E5%88%B0%E4%B8%80%E4%B8%AA%E5%85%B1%E4%BA%AB%E5%BA%93"><span class="toc-number">1.1.4.3.</span> <span class="toc-text"> 将目标程序链接到一个共享库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#build"><span class="toc-number">1.1.4.4.</span> <span class="toc-text"> build</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#e-installing%E8%B7%B3%E8%BF%87"><span class="toc-number">1.1.5.</span> <span class="toc-text"> E-installing（跳过）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#f-build-type"><span class="toc-number">1.1.6.</span> <span class="toc-text"> F-build-type</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE-build-type"><span class="toc-number">1.1.6.1.</span> <span class="toc-text"> 设置 build type</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E9%BB%98%E8%AE%A4%E7%9A%84-build-type"><span class="toc-number">1.1.6.2.</span> <span class="toc-text"> 设置默认的 build type</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#g-compile-flags"><span class="toc-number">1.1.7.</span> <span class="toc-text"> G-compile-flags</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E6%AF%8F%E4%B8%AA%E7%9B%AE%E6%A0%87%E8%AE%BE%E7%BD%AE-c-%E7%BC%96%E8%AF%91%E5%8F%82%E6%95%B0"><span class="toc-number">1.1.7.1.</span> <span class="toc-text"> 为每个目标设置 C++ 编译参数</span></a></li></ol></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        【工具】CMake学习
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Amjac</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-06-08T09:23:44.190Z" itemprop="datePublished">2021-06-08</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/cmake/" rel="tag">cmake</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="cmake-教程"><a class="markdownIt-Anchor" href="#cmake-教程"></a> CMake 教程</h1>
+<p>来自<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/58949190">知乎的推荐</a>： <a target="_blank" rel="noopener" href="https://github.com/ttroy50/cmake-examples">ttroy50/cmake-examples: Useful CMake Examples (github.com)</a></p>
+<h2 id="01-basic"><a class="markdownIt-Anchor" href="#01-basic"></a> 01-basic</h2>
+<h3 id="a-hello-cmake"><a class="markdownIt-Anchor" href="#a-hello-cmake"></a> A-hello-cmake</h3>
+<p>基本的 Helloworld 示例。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ tree </span><br><span class="line">.</span><br><span class="line">├── CMakeLists.txt</span><br><span class="line">├── main.cpp</span><br><span class="line">└── README.adoc</span><br></pre></td></tr></table></figure>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Set the minimum version of CMake that can be used</span></span><br><span class="line"><span class="comment"># To find the cmake version run</span></span><br><span class="line"><span class="comment"># $ cmake --version</span></span><br><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.5</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Set the project name</span></span><br><span class="line"><span class="keyword">project</span> (hello_cmake)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Add an executable</span></span><br><span class="line"><span class="keyword">add_executable</span>(hello_cmake main.cpp)</span><br></pre></td></tr></table></figure>
+<p>CMakeLists.txt 是保存 CMake 命令的文件。cmake 运行时会在当前目录中寻找 CMakeLists.txt 文件，如果不存在则会报错。</p>
+<ul>
+<li><code>cmake_minimum_required(VERSION 3.5)</code> ：指定 cmake 的最小版本要求</li>
+<li><code>project (hello_cmake)</code> ：提供项目名称信息，也可以包括版本，使用编译语言等信息</li>
+<li><code>add_executable(hello_cmake main.cpp)</code> ：<strong>重要！</strong> 用于指明可执行文件要从哪个源文件被构建。在这个样例中，源文件是 main.cpp。第一个参数是编译得到的可执行文件名，第二个参数是需要编译的若干个源文件。</li>
+</ul>
+<p>接下来编译这个例子。输入 <code>cmake .</code> 在当前目录下生成 Makefile 即可。也可以在其他目录下编译，如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir build</span><br><span class="line">$ cd build &amp;&amp; cmake ..</span><br><span class="line">$ $ tree .</span><br><span class="line">.</span><br><span class="line">├── CMakeCache.txt</span><br><span class="line">├── CMakeFiles</span><br><span class="line">│   ├── 3.10.2</span><br><span class="line">│   │   ├── CMakeCCompiler.cmake</span><br><span class="line">│   │   ├── CMakeCXXCompiler.cmake</span><br><span class="line">│   │   ├── CMakeDetermineCompilerABI_C.bin</span><br><span class="line">│   │   ├── CMakeDetermineCompilerABI_CXX.bin</span><br><span class="line"></span><br><span class="line">... ...</span><br><span class="line"></span><br><span class="line">├── cmake_install.cmake</span><br><span class="line">└── Makefile</span><br><span class="line"></span><br><span class="line">8 directories, 29 files</span><br></pre></td></tr></table></figure>
+<p>这样的好处是生成的若干中间文件不会冲散原有的目录结构。</p>
+<h3 id="b-hello-headers"><a class="markdownIt-Anchor" href="#b-hello-headers"></a> B-hello-headers</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ tree</span><br><span class="line">.</span><br><span class="line">├── CMakeLists.txt</span><br><span class="line">├── include</span><br><span class="line">│   └── Hello.h</span><br><span class="line">├── README.adoc</span><br><span class="line">└── src</span><br><span class="line">    ├── Hello.cpp</span><br><span class="line">    └── main.cpp</span><br><span class="line"></span><br><span class="line">2 directories, 5 files</span><br></pre></td></tr></table></figure>
+<p>有头文件，也有两个源文件。放在不同的目录下。</p>
+<h4 id="目录路径"><a class="markdownIt-Anchor" href="#目录路径"></a> 目录路径</h4>
+<p>cmake 语法指明了一些变量，可用于帮助在您的项目或源代码树中找到有用的目录。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Variable</th>
+<th style="text-align:center">Info</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">CMAKE_SOURCE_DIR</td>
+<td style="text-align:center">The root source directory</td>
+</tr>
+<tr>
+<td style="text-align:center">CMAKE_CURRENT_SOURCE_DIR</td>
+<td style="text-align:center">The current source directory if using sub-projects and directories.</td>
+</tr>
+<tr>
+<td style="text-align:center">PROJECT_SOURCE_DIR</td>
+<td style="text-align:center">The source directory of the current cmake project.</td>
+</tr>
+<tr>
+<td style="text-align:center">CMAKE_BINARY_DIR</td>
+<td style="text-align:center">The root binary / build directory. This is the directory where you ran the cmake command.</td>
+</tr>
+<tr>
+<td style="text-align:center">CMAKE_CURRENT_BINARY_DIR</td>
+<td style="text-align:center">The build directory you are currently in.</td>
+</tr>
+<tr>
+<td style="text-align:center">PROJECT_BINARY_DIR</td>
+<td style="text-align:center">The build directory for the current project.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="源文件变量"><a class="markdownIt-Anchor" href="#源文件变量"></a> 源文件变量</h4>
+<p>除了上面提到的预定义的变量，也可以自己添加变量。例如可以创建一个包含源文件的变量，这样就能够更清晰地描述这些文件，并简便地将它们添加到其他命令语句中，例如<code>add_executable()</code> 。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Create a sources variable with a link to all cpp files to compile</span></span><br><span class="line"><span class="keyword">set</span>(SOURCES</span><br><span class="line">    src/Hello.cpp</span><br><span class="line">    src/main.cpp</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">add_executable</span>(<span class="variable">$&#123;PROJECT_NAME&#125;</span> <span class="variable">$&#123;SOURCES&#125;</span>)</span><br></pre></td></tr></table></figure>
+<h4 id="tip"><a class="markdownIt-Anchor" href="#tip"></a> Tip</h4>
+<p>现在的 cmake 并不推荐为源文件设置一个变量。相反，直接在 <code>add_xxx</code> 函数中直接输入源文件的名字更为通用。（那你前面介绍个棒槌？？）</p>
+<h4 id="引用目录"><a class="markdownIt-Anchor" href="#引用目录"></a> 引用目录</h4>
+<p>当你有不同的 include 目录时，可以使用 <code>target_include_derectories()</code> 函数来告知编译器。这样编译时会添加 -I 参数来添加引用目录，例如 <code>-I/directory/path</code>。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">target_include_directories</span>(<span class="keyword">target</span></span><br><span class="line">    PRIVATE </span><br><span class="line">        <span class="variable">$&#123;PROJECT_SOURCE_DIR&#125;</span>/<span class="keyword">include</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p><code>PRIVATE</code> 指明了 include 的范围。这个会在下个部分解释，也可以参考这个函数的<a target="_blank" rel="noopener" href="https://cmake.org/cmake/help/v3.0/command/target_include_directories.html">说明文档</a>。</p>
+<h4 id="编译"><a class="markdownIt-Anchor" href="#编译"></a> 编译</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir build &amp;&amp; cd build &amp;&amp; cmake ..</span><br></pre></td></tr></table></figure>
+<h4 id="make-冗余输出verbose-output"><a class="markdownIt-Anchor" href="#make-冗余输出verbose-output"></a> make 冗余输出（Verbose Output）</h4>
+<p>在前面的例子中，运行 make 时只能看到 build 的状态。如果想看到完整的调试信息，可以在 make 时添加 <code>VERBOSE=1</code> 。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ make VERBOSE=1</span><br><span class="line">/usr/bin/cmake -H/home/amjac/workspace/cmake-examples/01-basic/B-hello-headers -B/home/amjac/workspace/cmake-examples/01-basic/B-hello-headers/build --check-build-system CMakeFiles/Makefile.cmake 0</span><br><span class="line">/usr/bin/cmake -E cmake_progress_start /home/amjac/workspace/cmake-examples/01-basic/B-hello-headers/build/CMakeFiles /home/amjac/workspace/cmake-examples/01-basic/B-hello-headers/build/CMakeFiles/progress.marks</span><br><span class="line">make -f CMakeFiles/Makefile2 all</span><br><span class="line">make[1]: Entering directory &#x27;/home/amjac/workspace/cmake-examples/01-basic/B-hello-headers/build&#x27;</span><br><span class="line">... ...</span><br></pre></td></tr></table></figure>
+<h3 id="c-static-library"><a class="markdownIt-Anchor" href="#c-static-library"></a> C-static-library</h3>
+<blockquote>
+<p>静态库指的是 .a</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ tree</span><br><span class="line">.</span><br><span class="line">├── CMakeLists.txt</span><br><span class="line">├── include</span><br><span class="line">│   └── static</span><br><span class="line">│       └── Hello.h</span><br><span class="line">├── README.adoc</span><br><span class="line">└── src</span><br><span class="line">    ├── Hello.cpp</span><br><span class="line">    └── main.cpp</span><br><span class="line"></span><br><span class="line">3 directories, 5 files</span><br></pre></td></tr></table></figure>
+<p><code>add_library</code> 用于创建一个库。<code>STATIC</code></p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#Generate the static library from the library sources</span></span><br><span class="line"><span class="keyword">add_library</span>(hello_library STATIC </span><br><span class="line">    src/Hello.cpp</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h4 id="充填引用目录"><a class="markdownIt-Anchor" href="#充填引用目录"></a> 充填引用目录</h4>
+<p>我们再次用到了 <code>target_include_directories</code> 来设置 include 目录。这次设定的范围是 <code>PUBLIC</code></p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">target_include_directories</span>(hello_library</span><br><span class="line">    PUBLIC </span><br><span class="line">        <span class="variable">$&#123;PROJECT_SOURCE_DIR&#125;</span>/<span class="keyword">include</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>设定为 <code>PUBLIC</code> 将会导致 include 目录被用于以下场景：</p>
+<ul>
+<li>编译库时（hello_library）</li>
+<li>编译链接该库的任何附加目标时</li>
+</ul>
+<p>这里解释范围的概念：</p>
+<ul>
+<li><code>PRIVATE</code>：仅用于编译该目标本身</li>
+<li><code>INTERFACE</code>：仅编译依赖于该目标的其他目标</li>
+<li><code>PUBLIC</code>：上述两种情况都包含</li>
+</ul>
+<h4 id="tip-2"><a class="markdownIt-Anchor" href="#tip-2"></a> Tip</h4>
+<p>对于公共头文件，将 include 目录用子目录命名是一个明智的决定。因为传递给 <code>target_include_directories</code> 的路径应该是 include 目录的根路径（即应该把所有头文件放在一个目录下，可以在目录内部再组织新的目录，但是传递给该函数的时候传递根目录）。引用时也应该这样：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;static/Hello.h&quot;</span></span></span><br></pre></td></tr></table></figure>
+<h4 id="链接到一个库"><a class="markdownIt-Anchor" href="#链接到一个库"></a> 链接到一个库</h4>
+<p>当编译一个可执行文件必须用到库时，必须告知编译器。可以使用 <code>target_link_libraries</code> 函数。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Add an executable with the above sources</span></span><br><span class="line"><span class="keyword">add_executable</span>(hello_binary </span><br><span class="line">    src/main.cpp</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># link the new hello_library target with the hello_binary target</span></span><br><span class="line"><span class="keyword">target_link_libraries</span>( hello_binary</span><br><span class="line">    PRIVATE </span><br><span class="line">        hello_library</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>也可以使用 <code>PUBLIC</code> 或者 <code>INTERFACE</code> 来限定范围。</p>
+<h3 id="d-shared-library"><a class="markdownIt-Anchor" href="#d-shared-library"></a> D-shared-library</h3>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ tree</span><br><span class="line">.</span><br><span class="line">├── CMakeLists.txt</span><br><span class="line">├── include</span><br><span class="line">│   └── shared</span><br><span class="line">│       └── Hello.h</span><br><span class="line">├── README.adoc</span><br><span class="line">└── src</span><br><span class="line">    ├── Hello.cpp</span><br><span class="line">    └── main.cpp</span><br><span class="line"></span><br><span class="line">3 directories, 5 files</span><br></pre></td></tr></table></figure>
+<h4 id="添加一个动态链接库共享库"><a class="markdownIt-Anchor" href="#添加一个动态链接库共享库"></a> 添加一个动态链接库（共享库）</h4>
+<p><code>add_library</code> 中添加 <code>SHARED</code> 即可：</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">add_library</span>(hello_library SHARED</span><br><span class="line">    src/Hello.cpp</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>此时会创建 <code>hello_library.so</code> 。</p>
+<h4 id="别名目标alias-target"><a class="markdownIt-Anchor" href="#别名目标alias-target"></a> 别名目标（Alias Target）</h4>
+<p>顾名思义，别名目标是目标的替代名称，可用于代替只读上下文中的真实目标名称。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">add_library</span>(hello::library ALIAS hello_library)</span><br></pre></td></tr></table></figure>
+<p>这允许您在将目标链接到其他目标时使用别名来引用目标。</p>
+<blockquote>
+<p>我不知道这个别名有什么用。百度了一下，ALIAS 目标主要用于为目标提供更多拼写或结构化名称，例如添加一个“命名空间”（例子中的 hello::）</p>
+</blockquote>
+<h4 id="将目标程序链接到一个共享库"><a class="markdownIt-Anchor" href="#将目标程序链接到一个共享库"></a> 将目标程序链接到一个共享库</h4>
+<p>仍然是 <code>add_executable</code> 和 <code>target_link_library</code> 的组合。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Add an executable with the above sources</span></span><br><span class="line"><span class="keyword">add_executable</span>(hello_binary</span><br><span class="line">    src/main.cpp</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># link the new hello_library target with the hello_binary target</span></span><br><span class="line"><span class="keyword">target_link_libraries</span>( hello_binary</span><br><span class="line">    PRIVATE </span><br><span class="line">        hello::library</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h4 id="build"><a class="markdownIt-Anchor" href="#build"></a> build</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir build &amp;&amp; cd build &amp;&amp; cmake ..</span><br><span class="line">$ make</span><br><span class="line">$ ldd hello_binary </span><br><span class="line">        linux-vdso.so.1 (0x00007fffc7f42000)</span><br><span class="line">        libhello_library.so =&gt; /home/amjac/workspace/cmake-examples/01-basic/D-shared-library/build/libhello_library.so (0x00007f63e3283000)</span><br><span class="line">        libc.so.6 =&gt; /lib/x86_64-linux-gnu/libc.so.6 (0x00007f63e2e92000)</span><br><span class="line">        libstdc++.so.6 =&gt; /usr/lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f63e2b09000)</span><br><span class="line">        /lib64/ld-linux-x86-64.so.2 (0x00007f63e3687000)</span><br><span class="line">        libm.so.6 =&gt; /lib/x86_64-linux-gnu/libm.so.6 (0x00007f63e276b000)</span><br><span class="line">        libgcc_s.so.1 =&gt; /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f63e2553000)</span><br></pre></td></tr></table></figure>
+<p>可以看到，编译出的程序依赖 libhello_library.so</p>
+<h3 id="e-installing跳过"><a class="markdownIt-Anchor" href="#e-installing跳过"></a> E-installing（跳过）</h3>
+<p>先跳过。</p>
+<h3 id="f-build-type"><a class="markdownIt-Anchor" href="#f-build-type"></a> F-build-type</h3>
+<p>cmake 包含一系列内建的配置项，可以指明编译时的优化等级，以及是否包含调试信息等，build type 具体如下：</p>
+<ul>
+<li>Release：添加 <code>-O3 -DNDEBUG</code> 参数</li>
+<li>Debug : 添加 <code>-g</code></li>
+<li>MinSizeRel：添加 <code>-Os -DNDEBUG</code></li>
+<li>RelWithDebInfo : 添加 <code>-O2 -g -DNDEBUG</code></li>
+</ul>
+<blockquote>
+<p>-DNDEBUG 将在编译时定义 NDEBUG 宏。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ tree</span><br><span class="line">.</span><br><span class="line">├── cmake-gui-build-type.png</span><br><span class="line">├── CMakeLists.txt</span><br><span class="line">├── main.cpp</span><br><span class="line">└── README.adoc</span><br><span class="line"></span><br><span class="line">0 directories, 4 files</span><br></pre></td></tr></table></figure>
+<h4 id="设置-build-type"><a class="markdownIt-Anchor" href="#设置-build-type"></a> 设置 build type</h4>
+<p>有两种选择：</p>
+<ul>
+<li>在图形化界面选择（例如 cmake-gui ）</li>
+<li>在编译时传递给 cmake（<code>cmake .. -DCMAKE_BUILD_TYPE=Release</code>）</li>
+</ul>
+<h4 id="设置默认的-build-type"><a class="markdownIt-Anchor" href="#设置默认的-build-type"></a> 设置默认的 build type</h4>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Set a default build type if none was specified</span></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">NOT</span> CMAKE_BUILD_TYPE <span class="keyword">AND</span> <span class="keyword">NOT</span> CMAKE_CONFIGURATION_TYPES)</span><br><span class="line">  <span class="keyword">message</span>(<span class="string">&quot;Setting build type to &#x27;RelWithDebInfo&#x27; as none was specified.&quot;</span>)</span><br><span class="line">  <span class="keyword">set</span>(CMAKE_BUILD_TYPE RelWithDebInfo CACHE <span class="keyword">STRING</span> <span class="string">&quot;Choose the type of build.&quot;</span> FORCE)</span><br><span class="line">  <span class="comment"># Set the possible values of build type for cmake-gui</span></span><br><span class="line">  <span class="keyword">set_property</span>(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS <span class="string">&quot;Debug&quot;</span> <span class="string">&quot;Release&quot;</span></span><br><span class="line">    <span class="string">&quot;MinSizeRel&quot;</span> <span class="string">&quot;RelWithDebInfo&quot;</span>)</span><br><span class="line"><span class="keyword">endif</span>()</span><br></pre></td></tr></table></figure>
+<h3 id="g-compile-flags"><a class="markdownIt-Anchor" href="#g-compile-flags"></a> G-compile-flags</h3>
+<p>CMake 有多种方式来设置编译时的参数：</p>
+<ul>
+<li>使用 <code>target_compile_definitions()</code> 函数</li>
+<li>使用 <code>CMAKE_C_FLAGS</code> 和 <code>CMAKE_CXX_FLAGS</code> 变量</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ tree</span><br><span class="line">.</span><br><span class="line">├── CMakeLists.txt</span><br><span class="line">├── main.cpp</span><br><span class="line">└── README.adoc</span><br><span class="line"></span><br><span class="line">0 directories, 3 files</span><br></pre></td></tr></table></figure>
+<h4 id="为每个目标设置-c-编译参数"><a class="markdownIt-Anchor" href="#为每个目标设置-c-编译参数"></a> 为每个目标设置 C++ 编译参数</h4>
+<p>推荐的方式是使用</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#cmake-%E6%95%99%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text"> CMake 教程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#01-basic"><span class="toc-number">1.1.</span> <span class="toc-text"> 01-basic</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#a-hello-cmake"><span class="toc-number">1.1.1.</span> <span class="toc-text"> A-hello-cmake</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#b-hello-headers"><span class="toc-number">1.1.2.</span> <span class="toc-text"> B-hello-headers</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9B%AE%E5%BD%95%E8%B7%AF%E5%BE%84"><span class="toc-number">1.1.2.1.</span> <span class="toc-text"> 目录路径</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%BA%90%E6%96%87%E4%BB%B6%E5%8F%98%E9%87%8F"><span class="toc-number">1.1.2.2.</span> <span class="toc-text"> 源文件变量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#tip"><span class="toc-number">1.1.2.3.</span> <span class="toc-text"> Tip</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BC%95%E7%94%A8%E7%9B%AE%E5%BD%95"><span class="toc-number">1.1.2.4.</span> <span class="toc-text"> 引用目录</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E8%AF%91"><span class="toc-number">1.1.2.5.</span> <span class="toc-text"> 编译</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#make-%E5%86%97%E4%BD%99%E8%BE%93%E5%87%BAverbose-output"><span class="toc-number">1.1.2.6.</span> <span class="toc-text"> make 冗余输出（Verbose Output）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#c-static-library"><span class="toc-number">1.1.3.</span> <span class="toc-text"> C-static-library</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%85%E5%A1%AB%E5%BC%95%E7%94%A8%E7%9B%AE%E5%BD%95"><span class="toc-number">1.1.3.1.</span> <span class="toc-text"> 充填引用目录</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#tip-2"><span class="toc-number">1.1.3.2.</span> <span class="toc-text"> Tip</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%93%BE%E6%8E%A5%E5%88%B0%E4%B8%80%E4%B8%AA%E5%BA%93"><span class="toc-number">1.1.3.3.</span> <span class="toc-text"> 链接到一个库</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#d-shared-library"><span class="toc-number">1.1.4.</span> <span class="toc-text"> D-shared-library</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0%E4%B8%80%E4%B8%AA%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%BA%93%E5%85%B1%E4%BA%AB%E5%BA%93"><span class="toc-number">1.1.4.1.</span> <span class="toc-text"> 添加一个动态链接库（共享库）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%AB%E5%90%8D%E7%9B%AE%E6%A0%87alias-target"><span class="toc-number">1.1.4.2.</span> <span class="toc-text"> 别名目标（Alias Target）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%86%E7%9B%AE%E6%A0%87%E7%A8%8B%E5%BA%8F%E9%93%BE%E6%8E%A5%E5%88%B0%E4%B8%80%E4%B8%AA%E5%85%B1%E4%BA%AB%E5%BA%93"><span class="toc-number">1.1.4.3.</span> <span class="toc-text"> 将目标程序链接到一个共享库</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#build"><span class="toc-number">1.1.4.4.</span> <span class="toc-text"> build</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#e-installing%E8%B7%B3%E8%BF%87"><span class="toc-number">1.1.5.</span> <span class="toc-text"> E-installing（跳过）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#f-build-type"><span class="toc-number">1.1.6.</span> <span class="toc-text"> F-build-type</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE-build-type"><span class="toc-number">1.1.6.1.</span> <span class="toc-text"> 设置 build type</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E9%BB%98%E8%AE%A4%E7%9A%84-build-type"><span class="toc-number">1.1.6.2.</span> <span class="toc-text"> 设置默认的 build type</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#g-compile-flags"><span class="toc-number">1.1.7.</span> <span class="toc-text"> G-compile-flags</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E6%AF%8F%E4%B8%AA%E7%9B%AE%E6%A0%87%E8%AE%BE%E7%BD%AE-c-%E7%BC%96%E8%AF%91%E5%8F%82%E6%95%B0"><span class="toc-number">1.1.7.1.</span> <span class="toc-text"> 为每个目标设置 C++ 编译参数</span></a></li></ol></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2021/06/cmake/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2021/06/cmake/&text=【工具】CMake学习"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2021/06/cmake/&title=【工具】CMake学习"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2021/06/cmake/&is_video=false&description=【工具】CMake学习"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【工具】CMake学习&body=Check out this article: https://iamjustachild.github.io/2021/06/cmake/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2021/06/cmake/&title=【工具】CMake学习"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2021/06/cmake/&title=【工具】CMake学习"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2021/06/cmake/&title=【工具】CMake学习"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2021/06/cmake/&title=【工具】CMake学习"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2021/06/cmake/&name=【工具】CMake学习&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2021/06/cmake/&t=【工具】CMake学习"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Amjac
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

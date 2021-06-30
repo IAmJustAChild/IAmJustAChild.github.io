@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Project类  __init__方法 第一步：加载程序，从指定的路径打开程序，调用CLE.Loader加载程序 12345678def __init__(......):    ......    ......    else:        # use angr&amp;#x27;s loader, provided by cle        l.info(&quot;Loading binar">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【angr源码分析】0. Project">
+<meta property="og:url" content="https://iamjustachild.github.io/2018/07/angr-0.%20Project/index.html">
+<meta property="og:site_name" content="Amjac 的博客">
+<meta property="og:description" content="Project类  __init__方法 第一步：加载程序，从指定的路径打开程序，调用CLE.Loader加载程序 12345678def __init__(......):    ......    ......    else:        # use angr&amp;#x27;s loader, provided by cle        l.info(&quot;Loading binar">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2018-07-31T02:57:12.000Z">
+<meta property="article:modified_time" content="2021-06-30T09:29:22.057Z">
+<meta property="article:author" content="Amjac">
+<meta property="article:tag" content="angr源码分析">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>【angr源码分析】0. Project</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post " href="/2018/08/angr-8.%20Angr%E6%8F%92%E4%BB%B6%E6%9C%BA%E5%88%B6/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post " href="/2018/07/angr-4.%20SimOS/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2018/07/angr-0.%20Project/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&text=【angr源码分析】0. Project"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&title=【angr源码分析】0. Project"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&is_video=false&description=【angr源码分析】0. Project"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【angr源码分析】0. Project&body=Check out this article: https://iamjustachild.github.io/2018/07/angr-0.%20Project/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&title=【angr源码分析】0. Project"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&title=【angr源码分析】0. Project"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&title=【angr源码分析】0. Project"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&title=【angr源码分析】0. Project"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&name=【angr源码分析】0. Project&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&t=【angr源码分析】0. Project"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#project%E7%B1%BB"><span class="toc-number">1.</span> <span class="toc-text"> Project类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#__init__%E6%96%B9%E6%B3%95"><span class="toc-number">1.1.</span> <span class="toc-text"> __init__方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#_register_object"><span class="toc-number">1.1.1.</span> <span class="toc-text"> _register_object</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#_load_object_isolated"><span class="toc-number">1.1.2.</span> <span class="toc-text"> _load_object_isolated</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#_register_object-loader"><span class="toc-number">1.1.3.</span> <span class="toc-text"> _register_object – loader</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#_map_object"><span class="toc-number">1.1.4.</span> <span class="toc-text"> _map_object</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#_relocate_object"><span class="toc-number">1.1.5.</span> <span class="toc-text"> _relocate_object</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#_backend_resolver"><span class="toc-number">1.1.6.</span> <span class="toc-text"> _backend_resolver</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#backends_cls"><span class="toc-number">1.1.7.</span> <span class="toc-text"> backends_cls</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        【angr源码分析】0. Project
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Amjac</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-07-31T02:57:12.000Z" itemprop="datePublished">2018-07-31</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/angr%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">angr源码分析</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="project类"><a class="markdownIt-Anchor" href="#project类"></a> Project类</h1>
+<h2 id="__init__方法"><a class="markdownIt-Anchor" href="#__init__方法"></a> __init__方法</h2>
+<p>第一步：加载程序，从指定的路径打开程序，调用CLE.Loader加载程序</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">......</span>):</span></span><br><span class="line">    ......</span><br><span class="line">    ......</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="comment"># use angr&#x27;s loader, provided by cle</span></span><br><span class="line">        l.info(<span class="string">&quot;Loading binary %s&quot;</span>, thing)</span><br><span class="line">        self.filename = thing</span><br><span class="line">        self.loader = cle.Loader(self.filename, **load_options)</span><br></pre></td></tr></table></figure>
+<p>第二步：判断系统的架构，根据用户的输入获得架构，或者直接获得加载的架构</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="built_in">isinstance</span>(arch, <span class="built_in">str</span>):</span><br><span class="line">    self.arch = archinfo.arch_from_id(arch)  <span class="comment"># may raise ArchError, let the user see this</span></span><br><span class="line">    <span class="keyword">elif</span> <span class="built_in">isinstance</span>(arch, archinfo.Arch):</span><br><span class="line">        self.arch = arch</span><br><span class="line">    <span class="keyword">elif</span> arch <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        self.arch = self.loader.main_object.arch</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&quot;Invalid arch specification.&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>第三步：获得默认信息，初始化一些属性</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">......</span><br><span class="line">    self.entry = self.loader.main_object.entry</span><br><span class="line">    self.storage = defaultdict(<span class="built_in">list</span>)</span><br><span class="line">    self.store_function = store_function <span class="keyword">or</span> self._store</span><br><span class="line">    self.load_function = load_function <span class="keyword">or</span> self._load</span><br></pre></td></tr></table></figure>
+<p>第四步：建立project的插件集合</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#	1.Engines。获得loader，arch的预设值，或者默认值</span></span><br><span class="line">    <span class="comment">#		没看懂，不知道engines是什么</span></span><br><span class="line">    <span class="comment">#		似乎也设置了factory</span></span><br><span class="line">    engines = EngineHub(self)</span><br><span class="line">    ...</span><br><span class="line">    self.engines = engines</span><br><span class="line">    self.factory = AngrObjectFactory(self)</span><br><span class="line"></span><br><span class="line">    <span class="comment">#	2.Anylyses</span></span><br><span class="line">    self.analyses = AnalysesHub(self)</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="comment">#	3.等等</span></span><br><span class="line">    self.surveyors = Surveyors(self)</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<p>其中，详细信息在：<a href="./engines.md">EngineHub</a>，<a href="./Factory.md">Factory</a></p>
+<p>第五步：判断操作系统（解决输入输出问题，SimOS）</p>
+<p>如果没有设置默认的simos，那么调用os_mapping方法。<a href="./SimOS.md">SimOS.md</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="built_in">isinstance</span>(simos, <span class="built_in">type</span>) <span class="keyword">and</span> <span class="built_in">issubclass</span>(simos, SimOS):</span><br><span class="line">    self.simos = simos(self) <span class="comment">#pylint:disable=invalid-name</span></span><br><span class="line"><span class="keyword">elif</span> simos <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">    self.simos = os_mapping[self.loader.main_object.os](self)</span><br></pre></td></tr></table></figure>
+<p>第六步：根据库函数的需要，将其注册为SimProcedures（感觉代码和描述不相符）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> obj <span class="keyword">in</span> self.loader.initial_load_objects:</span><br><span class="line">    self._register_object(obj)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>详细信息：</p>
+<ol>
+<li><a href="#_register_object">_register_object</a></li>
+</ol>
+</blockquote>
+<p>第七步：运行 OS-specific配置（？？？）</p>
+<p><code>self.simos.configure_project()</code></p>
+<hr>
+<hr>
+<h3 id="_register_object"><a class="markdownIt-Anchor" href="#_register_object"></a> _register_object</h3>
+<p>在CLE.loader目录下，Loader对象的__init__方法中，出现了：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">self.initial_load_objects = self._internal_load(main_binary,*force_load_libs)</span><br></pre></td></tr></table></figure>
+<p>_internal_load方法的描述如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_internal_load</span>(<span class="params">self, *args</span>):</span> </span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    加载任意数量的文件或者lib库。如果不能加载任意一个，就报错。将会返回一个成功加载的对象的list。</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    <span class="built_in">object</span> = []</span><br><span class="line">    <span class="keyword">for</span> main_spec <span class="keyword">in</span> args:</span><br><span class="line">        ... ...</span><br><span class="line">        main_obj = self._load_object_isolated(main_spec) <span class="comment">#[^1]</span></span><br><span class="line">        <span class="built_in">object</span>.append(main_object)</span><br><span class="line">        ... ...</span><br><span class="line">    ... ...</span><br><span class="line">    <span class="keyword">for</span> obj <span class="keyword">in</span> objects:</span><br><span class="line">        self._register_object(obj)<span class="comment">#[^2]</span></span><br><span class="line">        self._map_object(obj)<span class="comment">#[^3]</span></span><br><span class="line">        self._relocate_object(obj)<span class="comment">#[^4]</span></span><br><span class="line">        ...</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>详细信息：</p>
+<ol>
+<li><a href="#_load_object_isolated">_load_object_isolated</a></li>
+<li>[_register_object (loader)](#_register_object – loader)</li>
+<li><a href="#_map_object">_map_object</a></li>
+<li><a href="#_relocate_object">_relocate_object</a></li>
+</ol>
+</blockquote>
+<h3 id="_load_object_isolated"><a class="markdownIt-Anchor" href="#_load_object_isolated"></a> _load_object_isolated</h3>
+<p>Loader类的一个方法。描述如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_load_object_isolated</span>(<span class="params">self, spec</span>):</span></span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    Given a partial specification of a dependency, this will return 		the loaded object as a backend instance.</span></span><br><span class="line"><span class="string">    It will not touch any loader-global data.(没看懂)</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    <span class="comment">#1. 验证文件backend（PE，ELF等等）</span></span><br><span class="line">        full_spec = spec</span><br><span class="line">        <span class="keyword">if</span> 输入的spec是字符串（表示文件名）:</span><br><span class="line">            <span class="comment">#单纯地 获取完整路径，没有别的操作</span></span><br><span class="line">            full_spec = self._search_load_path(spec)</span><br><span class="line">            </span><br><span class="line">    <span class="comment">#2. 收集options 信息</span></span><br><span class="line">        options = ... ...</span><br><span class="line">    <span class="comment">#3. 验证 backend (判断是静态编译还是动态编译？？？没看懂)</span></span><br><span class="line">        <span class="comment">#（选择二进制的文件类型？？？）</span></span><br><span class="line">        backend_spec = options.pop(<span class="string">&#x27;backend&#x27;</span>, <span class="literal">None</span>)</span><br><span class="line">        backend_cls = self._backend_resolver(backend_spec)<span class="comment">#[^1]</span></span><br><span class="line">        <span class="keyword">if</span> backend_cls <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            backend_cls = self._static_backend(full_spec)</span><br><span class="line">        <span class="keyword">if</span> backend_cls <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            <span class="keyword">raise</span> CLECompatibilityError(<span class="string">&quot;Unable to find a loader 			       backend for %s.  Perhaps try the &#x27;blob&#x27; loader?&quot;</span> % spec)</span><br><span class="line">    <span class="comment">#4. 装载</span></span><br><span class="line">        <span class="keyword">return</span> backend_cls(full_spec, is_main_bin=self.main_object 				<span class="keyword">is</span> <span class="literal">None</span>, loader=self, **options)<span class="comment">#[^2]</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">#返回值是，一个类的对象（ELF类等）</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>详细信息：</p>
+<ol>
+<li><a href="#_backend_resolver">_backend_resolver</a></li>
+<li><a href="#backends_cls">backends_cls</a></li>
+</ol>
+</blockquote>
+<p>返回：<a href="#_register_object">_register_object</a></p>
+<h3 id="_register_object-loader"><a class="markdownIt-Anchor" href="#_register_object-loader"></a> _register_object – loader</h3>
+<p>Loader类的一个方法。描述如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function"><span class="keyword">def</span> <span class="title">_register_object</span>(<span class="params">self, obj</span>):</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Insert this object&#x27;s clerical information into the loader</span></span><br><span class="line"><span class="string">将对象的clerical information（？？？？）插入到 loader中(???)</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line">    self.requested_names.update(obj.deps) <span class="comment">#deps是ELF类的一个列表属性，可能表示obj的依赖文件名</span></span><br><span class="line">    <span class="keyword">for</span> ident <span class="keyword">in</span> self._possible_idents(obj):<span class="comment">#没看懂</span></span><br><span class="line">        self._satisfied_deps[ident] = obj</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> obj.provides <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        self.shared_objects[obj.provides] = obj</span><br></pre></td></tr></table></figure>
+<p>返回：<a href="#_register_object">_register_object</a></p>
+<h3 id="_map_object"><a class="markdownIt-Anchor" href="#_map_object"></a> _map_object</h3>
+<p>Loader类的一个方法。描述如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_map_object</span>(<span class="params">self, obj</span>):</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">This will integrate the object into the global address space, but will not perform relocations.</span></span><br><span class="line"><span class="string">将对象集合到全局地址空间中，但是并不会处理重定位项（加载文件到内存）</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="comment">#以ELF文件为例，obj一般是backends.elf文件夹中 ELF类的对象</span></span><br></pre></td></tr></table></figure>
+<p>返回：<a href="#_register_object">_register_object</a></p>
+<h3 id="_relocate_object"><a class="markdownIt-Anchor" href="#_relocate_object"></a> _relocate_object</h3>
+<p>补充_map_object，处理obj的重定位项，保证依赖关系先被重定位</p>
+<p>返回：<a href="#_register_object">_register_object</a></p>
+<h3 id="_backend_resolver"><a class="markdownIt-Anchor" href="#_backend_resolver"></a> _backend_resolver</h3>
+<p>在之前的#3中，验证backend时，调用了：</p>
+<p><code>backend_cls = self._backend_resolver(backend_spec)</code></p>
+<p>描述如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#静态解析：</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_backend_resolver</span>(<span class="params">backend, default=<span class="literal">None</span></span>):</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(backend, <span class="built_in">type</span>) <span class="keyword">and</span> <span class="built_in">issubclass</span>(backend, Backend):</span><br><span class="line">        <span class="keyword">return</span> backend</span><br><span class="line">    <span class="keyword">elif</span> backend <span class="keyword">in</span> ALL_BACKENDS:</span><br><span class="line">        <span class="keyword">return</span> ALL_BACKENDS[backend]</span><br><span class="line">    <span class="keyword">elif</span> backend <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">return</span> default</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">raise</span> CLEError(<span class="string">&#x27;Invalid backend: %s&#x27;</span> % backend)</span><br></pre></td></tr></table></figure>
+<p>ALL_BACKEND是一个字典，在cle.backends.init文件中定义。</p>
+<p><code>ALL_BACKENDS = dict()</code></p>
+<p>保存的是各种文件的backends（目前把backends理解为文件类型，即ELF，PE等）<br>
+在cle.elf文件夹下，elf.py文件中，调用了：</p>
+<p><code>register_backend('elf', ELF)</code></p>
+<p>即: <code>ALL_BACKENDS['elf'] = ELF</code></p>
+<p>ELF是一个类，用于静态地加载ELF文件。同理，在cle.pe.pe文件中，也有:</p>
+<p><code>register_backend('pe', PE)</code></p>
+<p>PE同样是一个类，用于加载PE文件。这样就可以解释静态backend_resolver中的</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">elif</span> backend <span class="keyword">in</span> ALL_BACKENDS:</span><br><span class="line">    <span class="keyword">return</span> ALL_BACKENDS[backend]</span><br></pre></td></tr></table></figure>
+<p>就是根据文件的类型，返回正确的，用于解析文件的类。backend就是接收返回值的对象。</p>
+<p>返回：<a href="#_load_object_isolated">_load_object_isolated</a></p>
+<h3 id="backends_cls"><a class="markdownIt-Anchor" href="#backends_cls"></a> backends_cls</h3>
+<p>#4的装载是：<code>backend_cls(full_spec, is_main_bin=self.main_object is None, loader=self, **options)</code></p>
+<p>在<a href="#_backend_resolver">_backend_resolver</a>中说过，backend_cls根据文件的类型不同，代表ELF类，或者PE类等。</p>
+<p>返回：<a href="#_load_object_isolated">_load_object_isolated</a></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#project%E7%B1%BB"><span class="toc-number">1.</span> <span class="toc-text"> Project类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#__init__%E6%96%B9%E6%B3%95"><span class="toc-number">1.1.</span> <span class="toc-text"> __init__方法</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#_register_object"><span class="toc-number">1.1.1.</span> <span class="toc-text"> _register_object</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#_load_object_isolated"><span class="toc-number">1.1.2.</span> <span class="toc-text"> _load_object_isolated</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#_register_object-loader"><span class="toc-number">1.1.3.</span> <span class="toc-text"> _register_object – loader</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#_map_object"><span class="toc-number">1.1.4.</span> <span class="toc-text"> _map_object</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#_relocate_object"><span class="toc-number">1.1.5.</span> <span class="toc-text"> _relocate_object</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#_backend_resolver"><span class="toc-number">1.1.6.</span> <span class="toc-text"> _backend_resolver</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#backends_cls"><span class="toc-number">1.1.7.</span> <span class="toc-text"> backends_cls</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2018/07/angr-0.%20Project/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&text=【angr源码分析】0. Project"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&title=【angr源码分析】0. Project"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&is_video=false&description=【angr源码分析】0. Project"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【angr源码分析】0. Project&body=Check out this article: https://iamjustachild.github.io/2018/07/angr-0.%20Project/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&title=【angr源码分析】0. Project"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&title=【angr源码分析】0. Project"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&title=【angr源码分析】0. Project"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&title=【angr源码分析】0. Project"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&name=【angr源码分析】0. Project&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2018/07/angr-0.%20Project/&t=【angr源码分析】0. Project"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Amjac
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

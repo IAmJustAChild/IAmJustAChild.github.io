@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="angr\block.py  Block类 factory中的block方法返回了Block的对象 class Block(object):  def _init_(): 参数也没有注释，心累。 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950def __init_">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【angr源码分析】2. Block">
+<meta property="og:url" content="https://iamjustachild.github.io/2018/08/angr-2.%20Block/index.html">
+<meta property="og:site_name" content="Amjac 的博客">
+<meta property="og:description" content="angr\block.py  Block类 factory中的block方法返回了Block的对象 class Block(object):  def _init_(): 参数也没有注释，心累。 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950def __init_">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2018-08-05T04:04:49.000Z">
+<meta property="article:modified_time" content="2021-06-30T09:29:22.058Z">
+<meta property="article:author" content="Amjac">
+<meta property="article:tag" content="angr源码分析">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>【angr源码分析】2. Block</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post " href="/2018/08/angr-3.%20Sim_State/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post " href="/2018/08/angr-7.%20exploration_techniques/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2018/08/angr-2.%20Block/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&text=【angr源码分析】2. Block"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&title=【angr源码分析】2. Block"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&is_video=false&description=【angr源码分析】2. Block"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【angr源码分析】2. Block&body=Check out this article: https://iamjustachild.github.io/2018/08/angr-2.%20Block/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&title=【angr源码分析】2. Block"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&title=【angr源码分析】2. Block"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&title=【angr源码分析】2. Block"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&title=【angr源码分析】2. Block"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&name=【angr源码分析】2. Block&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&t=【angr源码分析】2. Block"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#block%E7%B1%BB"><span class="toc-number">1.</span> <span class="toc-text"> Block类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#def-_init_"><span class="toc-number">1.0.1.</span> <span class="toc-text"> def _init_():</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        【angr源码分析】2. Block
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Amjac</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-08-05T04:04:49.000Z" itemprop="datePublished">2018-08-05</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/angr%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">angr源码分析</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>angr\<a target="_blank" rel="noopener" href="http://block.py">block.py</a></p>
+<h1 id="block类"><a class="markdownIt-Anchor" href="#block类"></a> Block类</h1>
+<p>factory中的block方法返回了Block的对象</p>
+<p><code>class Block(object):</code></p>
+<h3 id="def-_init_"><a class="markdownIt-Anchor" href="#def-_init_"></a> def _<em>init</em>_():</h3>
+<p>参数也没有注释，心累。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, </span></span></span><br><span class="line"><span class="params"><span class="function">             addr, </span></span></span><br><span class="line"><span class="params"><span class="function">             project=<span class="literal">None</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">             arch=<span class="literal">None</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">             size=<span class="literal">None</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">             byte_string=<span class="literal">None</span>, <span class="comment">#之前编译了什么东西，然后传进来</span></span></span></span><br><span class="line"><span class="params"><span class="function">             vex=<span class="literal">None</span>, <span class="comment">#该block的中间语言，没有设置的话就用engine生成</span></span></span></span><br><span class="line"><span class="params"><span class="function">             thumb=<span class="literal">False</span>, <span class="comment">#是否是ARM的thumb指令集</span></span></span></span><br><span class="line"><span class="params"><span class="function">             backup_state=<span class="literal">None</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">             opt_level=<span class="literal">None</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">             num_inst=<span class="literal">None</span>, <span class="comment">#number of instructions</span></span></span></span><br><span class="line"><span class="params"><span class="function">             traceflags=<span class="number">0</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">             strict_block_end=<span class="literal">None</span></span>):</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># set up arch</span></span><br><span class="line">    <span class="keyword">if</span> project <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        self.arch = project.arch</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        self.arch = arch</span><br><span class="line"></span><br><span class="line">    .... ....</span><br><span class="line">    </span><br><span class="line">    self._project = project</span><br><span class="line">    self.thumb = thumb</span><br><span class="line">    self.addr = addr</span><br><span class="line">    self._opt_level = opt_level</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#byte_string和project不能同时为空。目前还不清楚byte_string的用途</span></span><br><span class="line">    <span class="keyword">if</span> self._project <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">and</span> byte_string <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">raise</span> ValueError(<span class="string">&#x27;&quot;byte_string&quot; has to be specified if &quot;project&quot; is not provided.&#x27;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> size <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">if</span> byte_string <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            size = <span class="built_in">len</span>(byte_string)</span><br><span class="line">        <span class="keyword">elif</span> vex <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">            size = vex.size</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment">#lift方法用于获取中间语言（具体功能未知）</span></span><br><span class="line">            <span class="comment">#_vex_engine实际上调用了factory.default_engine</span></span><br><span class="line">            vex = self._vex_engine.lift(</span><br><span class="line">                    clemory=project.loader.memory,</span><br><span class="line">                    state=backup_state,</span><br><span class="line">                    insn_bytes=byte_string,</span><br><span class="line">                    addr=addr,</span><br><span class="line">                    thumb=thumb,</span><br><span class="line">                    opt_level=opt_level,</span><br><span class="line">                    num_inst=num_inst,</span><br><span class="line">                    traceflags=traceflags,</span><br><span class="line">                    strict_block_end=strict_block_end)</span><br><span class="line">            size = vex.size</span><br></pre></td></tr></table></figure>
+<p>可以看到，调用了<code>vex = self._vex_engine.lift(... ...)</code> 。在engine中，_vex_engine实际上是factory.default_engine，而default_engine在 ‘default’ preset中使用的实际上是 SimEngineVEX的对象。所以调用的lift方法实际上是<code>SimEngineVEX.lift</code> ，返回一个IRSB对象。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#block%E7%B1%BB"><span class="toc-number">1.</span> <span class="toc-text"> Block类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#def-_init_"><span class="toc-number">1.0.1.</span> <span class="toc-text"> def _init_():</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2018/08/angr-2.%20Block/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&text=【angr源码分析】2. Block"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&title=【angr源码分析】2. Block"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&is_video=false&description=【angr源码分析】2. Block"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【angr源码分析】2. Block&body=Check out this article: https://iamjustachild.github.io/2018/08/angr-2.%20Block/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&title=【angr源码分析】2. Block"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&title=【angr源码分析】2. Block"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&title=【angr源码分析】2. Block"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&title=【angr源码分析】2. Block"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&name=【angr源码分析】2. Block&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2018/08/angr-2.%20Block/&t=【angr源码分析】2. Block"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Amjac
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

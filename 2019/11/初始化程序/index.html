@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="初始化程序 源代码 init&#x2F; 目录下只有一个 main.c ，系统在执行完 boot&#x2F; 目录下的 head.s 程序之后就会将执行权限交给 main.c。该程序完成了内核初始化的所有操作。  功能描述  设置系统的根文件设备号，和一些内存全局变量  相关信息由 setup.s 程序提供。指明了主内存区的开始抵制，系统拥有的内存容量，以及作为高速缓冲区内存的末端地址。内存映像示意图如图。   进">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Linux 0.12】初始化程序">
+<meta property="og:url" content="https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/index.html">
+<meta property="og:site_name" content="Amjac 的博客">
+<meta property="og:description" content="初始化程序 源代码 init&#x2F; 目录下只有一个 main.c ，系统在执行完 boot&#x2F; 目录下的 head.s 程序之后就会将执行权限交给 main.c。该程序完成了内核初始化的所有操作。  功能描述  设置系统的根文件设备号，和一些内存全局变量  相关信息由 setup.s 程序提供。指明了主内存区的开始抵制，系统拥有的内存容量，以及作为高速缓冲区内存的末端地址。内存映像示意图如图。   进">
+<meta property="og:locale" content="zh_CH">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/1573554641580.png">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/1573811169559.png">
+<meta property="article:published_time" content="2019-11-12T09:54:11.000Z">
+<meta property="article:modified_time" content="2021-06-30T09:15:20.104Z">
+<meta property="article:author" content="Amjac">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/1573554641580.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>【Linux 0.12】初始化程序</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post " href="/2020/01/git%E5%85%A5%E9%97%A8/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post " href="/2019/10/%E5%BC%95%E5%AF%BC%E5%90%AF%E5%8A%A8%E7%A8%8B%E5%BA%8F/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&text=【Linux 0.12】初始化程序"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&title=【Linux 0.12】初始化程序"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&is_video=false&description=【Linux 0.12】初始化程序"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【Linux 0.12】初始化程序&body=Check out this article: https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&title=【Linux 0.12】初始化程序"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&title=【Linux 0.12】初始化程序"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&title=【Linux 0.12】初始化程序"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&title=【Linux 0.12】初始化程序"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&name=【Linux 0.12】初始化程序&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&t=【Linux 0.12】初始化程序"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.</span> <span class="toc-text"> 初始化程序</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%9F%E8%83%BD%E6%8F%8F%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text"> 功能描述</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        【Linux 0.12】初始化程序
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Amjac</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-11-12T09:54:11.000Z" itemprop="datePublished">2019-11-12</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/Linux%E5%AD%A6%E4%B9%A0/">Linux学习</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Linux/" rel="tag">Linux</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="初始化程序"><a class="markdownIt-Anchor" href="#初始化程序"></a> 初始化程序</h1>
+<p>源代码 init/ 目录下只有一个 main.c ，系统在执行完 boot/ 目录下的 head.s 程序之后就会将执行权限交给 main.c。该程序完成了内核初始化的所有操作。</p>
+<h2 id="功能描述"><a class="markdownIt-Anchor" href="#功能描述"></a> 功能描述</h2>
+<ol>
+<li>设置系统的根文件设备号，和一些内存全局变量</li>
+</ol>
+<p>相关信息由 setup.s 程序提供。指明了主内存区的开始抵制，系统拥有的内存容量，以及作为高速缓冲区内存的末端地址。内存映像示意图如图。</p>
+<p><img src="/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/1573554641580.png" alt="系统中内存功能划分示意图"></p>
+<ol start="2">
+<li>进行硬件初始化等</li>
+</ol>
+<p>陷阱门，块/字符设备，tty，第一个任务 <code>Task0</code>（idle 进程）。</p>
+<ol start="3">
+<li>设置中断允许标志，开启中断</li>
+<li>并切换到 <code>Task0</code> 运行（从内核态切换到用户态，此时 main.c 的主程序运行于任务0）</li>
+<li>调用 <code>fork()</code> 函数创建一个用于运行 <code>init()</code> 的子进程（通常称为 <strong>init 进程</strong>）</li>
+</ol>
+<p><img src="/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/1573811169559.png" alt="内核初始化程序流程示意图"></p>
+<blockquote>
+<p>创建新进程的过程是通过完全复制父进程代码段和数据段的方式实现的，因此在首次使用 fork 创建进程 init 时，为了确保新进程用户态栈中没有进程 0 的多余信息，要求进程 0 在创建进程 1 之前不要使用用户态栈（即不要使用函数调用）。</p>
+</blockquote>
+<p>init 函数的功能可以分为四个部分：</p>
+<ul>
+<li>安装根文件系统：</li>
+</ul>
+<p>调用系统调用 <code>setup()</code> 收集硬盘设备分区表信息并安装根文件系统，在安装根文件系统之前，系统会先判断是否需要建立虚拟盘，则内核就会首先尝试把根文件系统加载到内存的虚拟盘区中。</p>
+<ul>
+<li>显示系统信息</li>
+</ul>
+<p><code>init()</code> 打开一个终端设备 <code>tty0</code>，并复制其文件描述符以产生标准输入 stdin，标准输出 stdout，和错误输出 stderror 设备。内核随后利用这些描述符在终端上显示一些系统信息，例如高速缓冲区中缓冲块总数，主内存空间内存总字节数等。</p>
+<ul>
+<li>运行系统初始资源配置文件 rc 中的命令</li>
+<li>执行用户登录 shell 程序</li>
+</ul>
+<p>由于首次从任务 0 fork 生成任务 1 时，数据段和代码段都是完全复制的，所以需要保证任务 0 没有任何多余信息，其中包括栈内容，所以任务 0 不能进行函数调用，而是使用内联函数来执行系统调用。</p>
+<p>CMOS（Complementary Metal Oxide Semiconductor）：它是指制造<a target="_blank" rel="noopener" href="https://baike.baidu.com/item/%E5%A4%A7%E8%A7%84%E6%A8%A1%E9%9B%86%E6%88%90%E7%94%B5%E8%B7%AF">大规模集成电路</a>芯片用的一种技术或用这种技术制造出来的芯片，是电脑主板上的一块可读写的RAM芯片。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.</span> <span class="toc-text"> 初始化程序</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%9F%E8%83%BD%E6%8F%8F%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text"> 功能描述</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&text=【Linux 0.12】初始化程序"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&title=【Linux 0.12】初始化程序"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&is_video=false&description=【Linux 0.12】初始化程序"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【Linux 0.12】初始化程序&body=Check out this article: https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&title=【Linux 0.12】初始化程序"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&title=【Linux 0.12】初始化程序"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&title=【Linux 0.12】初始化程序"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&title=【Linux 0.12】初始化程序"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&name=【Linux 0.12】初始化程序&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/&t=【Linux 0.12】初始化程序"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Amjac
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

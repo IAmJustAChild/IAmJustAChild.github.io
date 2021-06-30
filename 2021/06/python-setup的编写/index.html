@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="打包一个 python 项目  1. 项目的分发打包 对源代码进行封装，使使用者的安装部署更为简洁。 12pip install pwntoolspython setup.py install  distutils distutils 是 Python 的一个标准库，从命名上很容易看出它是一个分发（distribute）工具（utlis），它是 Python 官方开发的一个分发打包工具，所有后续">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【其他】打包一个 python 项目">
+<meta property="og:url" content="https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/index.html">
+<meta property="og:site_name" content="Amjac 的博客">
+<meta property="og:description" content="打包一个 python 项目  1. 项目的分发打包 对源代码进行封装，使使用者的安装部署更为简洁。 12pip install pwntoolspython setup.py install  distutils distutils 是 Python 的一个标准库，从命名上很容易看出它是一个分发（distribute）工具（utlis），它是 Python 官方开发的一个分发打包工具，所有后续">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2021-06-27T12:32:06.000Z">
+<meta property="article:modified_time" content="2021-06-30T09:28:24.208Z">
+<meta property="article:author" content="Amjac">
+<meta property="article:tag" content="python">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>【其他】打包一个 python 项目</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post " href="/2021/06/Pintools/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post " href="/2021/06/cmake/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&text=【其他】打包一个 python 项目"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&title=【其他】打包一个 python 项目"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&is_video=false&description=【其他】打包一个 python 项目"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【其他】打包一个 python 项目&body=Check out this article: https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&title=【其他】打包一个 python 项目"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&title=【其他】打包一个 python 项目"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&title=【其他】打包一个 python 项目"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&title=【其他】打包一个 python 项目"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&name=【其他】打包一个 python 项目&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&t=【其他】打包一个 python 项目"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%89%93%E5%8C%85%E4%B8%80%E4%B8%AA-python-%E9%A1%B9%E7%9B%AE"><span class="toc-number">1.</span> <span class="toc-text"> 打包一个 python 项目</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E9%A1%B9%E7%9B%AE%E7%9A%84%E5%88%86%E5%8F%91%E6%89%93%E5%8C%85"><span class="toc-number">1.1.</span> <span class="toc-text"> 1. 项目的分发打包</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#distutils"><span class="toc-number">1.1.1.</span> <span class="toc-text"> distutils</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#setuptools"><span class="toc-number">1.1.2.</span> <span class="toc-text"> setuptools</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-setuppy-%E7%9A%84%E7%BC%96%E5%86%99"><span class="toc-number">1.2.</span> <span class="toc-text"> 2. setup.py 的编写</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84-setuppy"><span class="toc-number">1.2.1.</span> <span class="toc-text"> 最简单的 setup.py</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E5%8C%85%E5%93%AA%E4%BA%9B-python-%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.2.</span> <span class="toc-text"> 打包哪些 python 文件？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#packages-%E5%8F%82%E6%95%B0-%E5%88%97%E5%87%BA%E6%89%80%E6%9C%89%E9%9C%80%E8%A6%81%E7%9A%84-package"><span class="toc-number">1.2.2.1.</span> <span class="toc-text"> packages 参数: 列出所有需要的 package</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#py_modules-%E5%8F%82%E6%95%B0-%E5%88%97%E5%87%BA%E7%8B%AC%E7%AB%8B%E7%9A%84%E6%A8%A1%E5%9D%97"><span class="toc-number">1.2.2.2.</span> <span class="toc-text"> py_modules 参数: 列出独立的模块</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E6%B3%A8%E5%86%8C%E4%B8%80%E4%B8%AA%E5%91%BD%E4%BB%A4%E8%A1%8C%E8%84%9A%E6%9C%AC"><span class="toc-number">1.2.3.</span> <span class="toc-text"> 如何注册一个命令行脚本？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-argparse-%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">1.3.</span> <span class="toc-text"> 3. argparse 的使用</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        【其他】打包一个 python 项目
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Amjac</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2021-06-27T12:32:06.000Z" itemprop="datePublished">2021-06-27</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/python/" rel="tag">python</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="打包一个-python-项目"><a class="markdownIt-Anchor" href="#打包一个-python-项目"></a> 打包一个 python 项目</h1>
+<h2 id="1-项目的分发打包"><a class="markdownIt-Anchor" href="#1-项目的分发打包"></a> 1. 项目的分发打包</h2>
+<p>对源代码进行封装，使使用者的安装部署更为简洁。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip install pwntools</span><br><span class="line">python setup.py install</span><br></pre></td></tr></table></figure>
+<h3 id="distutils"><a class="markdownIt-Anchor" href="#distutils"></a> distutils</h3>
+<p><code>distutils</code> 是 Python 的一个<strong>标准库</strong>，从命名上很容易看出它是一个分发（distribute）工具（utlis），它是 Python 官方开发的一个分发打包工具，<strong>所有后续的打包工具，全部都是基于它进行开发的。</strong></p>
+<p>通过一个 <a target="_blank" rel="noopener" href="http://setup.py">setup.py</a> 来实现模块的封装与安装(参考链接：<a target="_blank" rel="noopener" href="https://docs.python.org/3.6/distutils/setupscript.html">https://docs.python.org/3.6/distutils/setupscript.html</a>)：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> distutils.core <span class="keyword">import</span> setup</span><br><span class="line"></span><br><span class="line">setup(name=<span class="string">&#x27;Distutils&#x27;</span>,</span><br><span class="line">      version=<span class="string">&#x27;1.0&#x27;</span>,</span><br><span class="line">      description=<span class="string">&#x27;Python Distribution Utilities&#x27;</span>,</span><br><span class="line">      author=<span class="string">&#x27;Greg Ward&#x27;</span>,</span><br><span class="line">      author_email=<span class="string">&#x27;gward@python.net&#x27;</span>,</span><br><span class="line">      url=<span class="string">&#x27;https://www.python.org/sigs/distutils-sig/&#x27;</span>,</span><br><span class="line">      packages=[<span class="string">&#x27;distutils&#x27;</span>, <span class="string">&#x27;distutils.command&#x27;</span>],</span><br><span class="line">     )</span><br></pre></td></tr></table></figure>
+<h3 id="setuptools"><a class="markdownIt-Anchor" href="#setuptools"></a> setuptools</h3>
+<p><code>setuptools</code> 是 distutils 增强版，<strong>不包括在标准库</strong>中。setuptools 有一系列分支版本，包括 <code>distribute</code> 等。</p>
+<p>在安装了 setuptools 之后，就可以使用 easy_install 来安装一个包了：</p>
+<p>通过包名，从PyPI寻找最新版本，自动下载、编译、安装</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">easy_install pkg_name</span><br></pre></td></tr></table></figure>
+<p>通过包名从指定下载页寻找链接来安装或升级包</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ easy_install -f http://pythonpaste.org/package_index.html </span><br><span class="line">$ easy_install -f http://pythonpaste.org/package_index.html </span><br></pre></td></tr></table></figure>
+<p>指定线上的包地址安装</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ easy_install http://example.com/path/to/MyPackage-1.2.3.tgz</span><br></pre></td></tr></table></figure>
+<p>从本地的 .egg 文件安装</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ easy_install xxx.egg</span><br></pre></td></tr></table></figure>
+<p>在安装时你可以添加额外的参数</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">指定安装目录：--install-dir=DIR, -d DIR</span><br><span class="line">指定用户安装：--user</span><br></pre></td></tr></table></figure>
+<p>但是比起 easy_install，我更喜欢 pip。</p>
+<h2 id="2-setuppy-的编写"><a class="markdownIt-Anchor" href="#2-setuppy-的编写"></a> 2. <a target="_blank" rel="noopener" href="http://setup.py">setup.py</a> 的编写</h2>
+<h3 id="最简单的-setuppy"><a class="markdownIt-Anchor" href="#最简单的-setuppy"></a> 最简单的 <a target="_blank" rel="noopener" href="http://setup.py">setup.py</a></h3>
+<p>一个最简单的例子：如果我们想要创建一个名为 foo 的包，只包含一个文件 <code>foo.py</code> ，那么 <a target="_blank" rel="noopener" href="http://setup.py">setup.py</a> 的写法如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> distutils.core <span class="keyword">import</span> setup</span><br><span class="line">setup(name=<span class="string">&#x27;foo&#x27;</span>,</span><br><span class="line">      version=<span class="string">&#x27;1.0&#x27;</span>,</span><br><span class="line">      py_modules=[<span class="string">&#x27;foo&#x27;</span>],</span><br><span class="line">      )</span><br></pre></td></tr></table></figure>
+<p><code>setup()</code> 函数的参数就是需要提供的信息。主要包含两种类型：</p>
+<ul>
+<li>包的元数据：包名称，版本号等</li>
+<li>包内文件：这个包中包含哪些文件内容，需要哪些依赖等等</li>
+</ul>
+<p>当你编写好 <a target="_blank" rel="noopener" href="http://setup.py">setup.py</a> 后，运行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python setup.py sdist</span><br></pre></td></tr></table></figure>
+<p>这将会生成一个 <code>foo-1.0.tar.gz</code> (或者 <code>.zip</code>) 文件。</p>
+<p>运行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python setup.py install</span><br></pre></td></tr></table></figure>
+<p>将会执行安装。这会将 <a target="_blank" rel="noopener" href="http://foo.py">foo.py</a> 复制到当前系统中 Python 的第三方模块目录下。</p>
+<p>接下来看一个更复杂的例子：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> distutils.core <span class="keyword">import</span> setup</span><br><span class="line"></span><br><span class="line">setup(name=<span class="string">&#x27;Distutils&#x27;</span>,</span><br><span class="line">      version=<span class="string">&#x27;1.0&#x27;</span>,</span><br><span class="line">      description=<span class="string">&#x27;Python Distribution Utilities&#x27;</span>,</span><br><span class="line">      author=<span class="string">&#x27;Greg Ward&#x27;</span>,</span><br><span class="line">      author_email=<span class="string">&#x27;gward@python.net&#x27;</span>,</span><br><span class="line">      url=<span class="string">&#x27;https://www.python.org/sigs/distutils-sig/&#x27;</span>,</span><br><span class="line">      packages=[<span class="string">&#x27;distutils&#x27;</span>, <span class="string">&#x27;distutils.command&#x27;</span>],</span><br><span class="line">     )</span><br></pre></td></tr></table></figure>
+<p>和前面的简单例子的区别在于，这个 <a target="_blank" rel="noopener" href="http://setup.py">setup.py</a> 的元数据比较多。其他的元数据信息可以看<a target="_blank" rel="noopener" href="https://docs.python.org/3/distutils/setupscript.html#meta-data">官方文档</a>。</p>
+<blockquote>
+<p>下面会反复提到 package 和 module 的概念，这里作一个解释：</p>
+<ul>
+<li>module：每一个 python 文件都是一个 module</li>
+<li>package：本质上是一个目录，装有 module 的目录就是一个 package。原则上，一个 package（目录）中必须有一个 <code>__init__.py</code> 文件来表示该目录是一个 package。</li>
+</ul>
+<p>下面提到的 <code>模块</code> 和 <code>包</code> 都是指 module 和 package，我也尽量用英文单词。</p>
+</blockquote>
+<h3 id="打包哪些-python-文件"><a class="markdownIt-Anchor" href="#打包哪些-python-文件"></a> 打包哪些 python 文件？</h3>
+<p>在打包时，必须告诉 distutils 哪些源文件（.py）是需要被打包的。这个时候就有两种方式：</p>
+<ul>
+<li>以 package 为单位打包：适合更大的项目，有多个 package 管理的情况下使用；</li>
+<li>以 module 为单位打包：适合小项目，只有若干个源文件的情况下使用。</li>
+</ul>
+<h4 id="packages-参数-列出所有需要的-package"><a class="markdownIt-Anchor" href="#packages-参数-列出所有需要的-package"></a> packages 参数: 列出所有需要的 package</h4>
+<p>packages 是一个 list，每一个元素都是一个 package 名，distutils 会分别查找这些 package，将其中的 python 文件（也就是 module）进行打包。</p>
+<p>为了实现这一点，需要有一个 package 名与其目录的对应关系。当你输入了类似 <code>package=[&quot;foo&quot;]</code> 这样的语句时，表示在 <a target="_blank" rel="noopener" href="http://setup.py">setup.py</a> 同目录下存在一个名为 foo 的目录，且存在 <code>foo/__init__.py</code> 文件来表示 foo 是一个package。</p>
+<p>当然，如果你使用的 package 的位置不在当前目录下，那么可以使用 <code>package_dir</code> 参数来指定，类似于 <code>package_dir = &#123;'': 'lib'&#125;</code>，它是一个字典，键表示的是包名，值表示的是当前目录距离包所在目录的相对位置。这个例子的意思是，包 foo 位于 <code>lib/foo/__init__.py</code> 。</p>
+<h4 id="py_modules-参数-列出独立的模块"><a class="markdownIt-Anchor" href="#py_modules-参数-列出独立的模块"></a> py_modules 参数: 列出独立的模块</h4>
+<p>也可以直接引用单独的 module。如果只有一个 module，尤其是只有单个源文件的时候，使用 py_modules 更好。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">py_modules = [<span class="string">&#x27;mod1&#x27;</span>, <span class="string">&#x27;pkg.mod2&#x27;</span>]</span><br></pre></td></tr></table></figure>
+<p>上面这句话描述了两个 module：一个位于包的根目录下，另一个位于名为 pkg 的包中，模块名为 mod2。</p>
+<h3 id="如何注册一个命令行脚本"><a class="markdownIt-Anchor" href="#如何注册一个命令行脚本"></a> 如何注册一个命令行脚本？</h3>
+<p>一般情况下，<a target="_blank" rel="noopener" href="http://setup.py">setup.py</a> 安装一个包后，只能通过 <code>import xxx</code> 的形式在 python 源代码里使用。但是也可以把某个脚本注册到命令行下。</p>
+<p>被注册的脚本需要是一个 python 脚本，最好在脚本开头写上 <code>#!python</code> 。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">setup(...,</span><br><span class="line">      scripts=[<span class="string">&#x27;scripts/xmlproc_parse&#x27;</span>, <span class="string">&#x27;scripts/xmlproc_val&#x27;</span>]</span><br><span class="line">      )</span><br></pre></td></tr></table></figure>
+<p>这样，将会把 <code>scripts/xmlproc_parse</code> 和 <code>scripts/xmlproc_val</code>  添加到环境变量，可以直接输入 <code>xmlproc_parse</code> 和 <code>xmlproc_val</code> 来执行这两个脚本。</p>
+<p>还有一种方法是使用 setuptools，这样就可以使用 <code>entry_points</code>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">setup(...,</span><br><span class="line">  entry_points=&#123;</span><br><span class="line">          <span class="string">&#x27;console_scripts&#x27;</span>: [</span><br><span class="line">              <span class="string">&#x27;foo = foo.main:main&#x27;</span></span><br><span class="line">          ]</span><br><span class="line">      &#125;,</span><br><span class="line">     )</span><br></pre></td></tr></table></figure>
+<p>这样就会在环境变量中添加一个 <code>foo</code> 命令，它指向的是 <code>foo/main.py</code> 中的 main 函数。</p>
+<h2 id="3-argparse-的使用"><a class="markdownIt-Anchor" href="#3-argparse-的使用"></a> 3. argparse 的使用</h2>
+<p><a target="_blank" rel="noopener" href="https://docs.python.org/zh-cn/3/library/argparse.html">官方文档</a> （终于有中文文档了）</p>
+<p>创建一个解析器：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">parser = argparse.ArgumentParser(description=<span class="string">&#x27;Process some integers.&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>添加参数：</p>
+<p>给一个 <code>ArgumentParser</code> 添加程序参数信息是通过调用 <code>add_argument()</code> 方法完成的。通常，这些调用指定 <code>ArgumentParser</code> 如何获取命令行字符串并将其转换为对象。这些信息在 <code>parse_args()</code> 调用时被存储和使用。</p>
+<p>参数有<strong>必选参数</strong>和<strong>可选参数</strong>两种：</p>
+<ul>
+<li>必选参数：类似于前面例子中的 <code>integers</code> ，即参数名不加 <code>-</code> 的参数。</li>
+<li>可选参数：类似于前面例子中的 <code>--sum</code>，即参数名添加了 <code>-</code> 的参数。</li>
+</ul>
+<p>必选参数必须被指定。否则会报错。（可选参数也可以使用 <code>required=True</code> 来指定，使其成为一个必须的参数。）</p>
+<p>普通参数是通过顺序来区分的，而可选参数则是通过类似 <code>--name=&quot;abc&quot;</code> 这样的形式传递，增加了命令行中的可读性。</p>
+<p>下面是一个例子</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"></span><br><span class="line">parser = argparse.ArgumentParser(description=<span class="string">&#x27;Process some integers.&#x27;</span>)</span><br><span class="line">parser.add_argument(<span class="string">&#x27;integers&#x27;</span>, metavar=<span class="string">&#x27;N&#x27;</span>, <span class="built_in">type</span>=<span class="built_in">int</span>, nargs=<span class="string">&#x27;+&#x27;</span>,</span><br><span class="line">                    <span class="built_in">help</span>=<span class="string">&#x27;an integer for the accumulator&#x27;</span>)</span><br><span class="line">parser.add_argument(<span class="string">&#x27;--name&#x27;</span>, <span class="built_in">type</span>=<span class="built_in">str</span>, default=<span class="string">&#x27;三&#x27;</span>, <span class="built_in">help</span>=<span class="string">&#x27;名&#x27;</span>)</span><br><span class="line"></span><br><span class="line">args = parser.parse_args()</span><br><span class="line"><span class="built_in">print</span>(args.accumulate(args.integers))</span><br></pre></td></tr></table></figure>
+<ul>
+<li>
+<p><code>nargs='+'</code> 表示传入的参数个数，其中+表示至少传入一个参数。</p>
+</li>
+<li>
+<p><code>default='三'</code> 表示默认值是 <code>'三'</code></p>
+<p>前面的例子中，必选参数 <code>integers</code> 和 可选参数 <code>--name</code> 都是为了传递一个（或多个）变量，但有时候，我们希望可选参数来表示一个不同的操作，例如：</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"></span><br><span class="line">parser = argparse.ArgumentParser(description=<span class="string">&#x27;Process some integers.&#x27;</span>)</span><br><span class="line">parser.add_argument(<span class="string">&#x27;integers&#x27;</span>, metavar=<span class="string">&#x27;N&#x27;</span>, <span class="built_in">type</span>=<span class="built_in">int</span>, nargs=<span class="string">&#x27;+&#x27;</span>,</span><br><span class="line">                    <span class="built_in">help</span>=<span class="string">&#x27;an integer for the accumulator&#x27;</span>)</span><br><span class="line">parser.add_argument(<span class="string">&#x27;--sum&#x27;</span>, dest=<span class="string">&#x27;accumulate&#x27;</span>, action=<span class="string">&#x27;store_const&#x27;</span>,</span><br><span class="line">                    const=<span class="built_in">sum</span>, default=<span class="built_in">max</span>,</span><br><span class="line">                    <span class="built_in">help</span>=<span class="string">&#x27;sum the integers (default: find the max)&#x27;</span>)</span><br><span class="line"></span><br><span class="line">args = parser.parse_args()</span><br><span class="line"><span class="built_in">print</span>(args.accumulate(args.integers))</span><br></pre></td></tr></table></figure>
+<p>这个例子将接收若干个整数，输出他们的最大值。如果设置了 <code>--sum</code> 参数，则会输出它们的和。这个依靠 <code>action</code> 参数。（参考链接：<a target="_blank" rel="noopener" href="https://blog.csdn.net/Drievn/article/details/70821188%EF%BC%89">https://blog.csdn.net/Drievn/article/details/70821188）</a></p>
+<p>解释 <code>action</code> 参数：在解析到这个参数时，触发某种动作。argparse 内置了六种动作：</p>
+<ul>
+<li>
+<p><code>&quot;store&quot;</code> ：将参数的传递的值原本地保存下来</p>
+</li>
+<li>
+<p><code>&quot;store_const&quot;</code> ：将保存一个固定值，这个固定值由 <code>const=xxx</code> 来指定</p>
+</li>
+<li>
+<p><code>&quot;store_true&quot;</code> / <code>&quot;store_false&quot;</code> ：保存 true / false</p>
+</li>
+<li>
+<p><code>&quot;append&quot;</code> ：将参数的值 append 到一个 list 中</p>
+</li>
+<li>
+<p><code>append_const</code> ： 将固定的值 append 到一个 list 中</p>
+</li>
+</ul>
+<p>上述六个操作，都会将值保存到 <code>dest=xxx</code> 指定的位置。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"></span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line"></span><br><span class="line">parser.add_argument(<span class="string">&#x27;-s&#x27;</span>, action=<span class="string">&#x27;store&#x27;</span>, dest=<span class="string">&#x27;simple_value&#x27;</span>,</span><br><span class="line">        <span class="built_in">help</span>=<span class="string">&#x27;Store a simple value&#x27;</span>)</span><br><span class="line"></span><br><span class="line">parser.add_argument(<span class="string">&#x27;-c&#x27;</span>, action=<span class="string">&#x27;store_const&#x27;</span>, dest=<span class="string">&#x27;constant_value&#x27;</span>,</span><br><span class="line">        const=<span class="string">&#x27;value-to-store&#x27;</span>,</span><br><span class="line">        <span class="built_in">help</span>=<span class="string">&#x27;Store a constant value&#x27;</span>)</span><br><span class="line"></span><br><span class="line">parser.add_argument(<span class="string">&#x27;-t&#x27;</span>, action=<span class="string">&#x27;store_true&#x27;</span>, default=<span class="literal">False</span>,</span><br><span class="line">        dest=<span class="string">&#x27;boolean_switch&#x27;</span>,</span><br><span class="line">        <span class="built_in">help</span>=<span class="string">&#x27;Set a switch to true&#x27;</span>)</span><br><span class="line">parser.add_argument(<span class="string">&#x27;-f&#x27;</span>, action=<span class="string">&#x27;store_false&#x27;</span>, default=<span class="literal">False</span>,</span><br><span class="line">        dest=<span class="string">&#x27;boolean_switch&#x27;</span>,</span><br><span class="line">        <span class="built_in">help</span>=<span class="string">&#x27;Set a switch to false&#x27;</span>)</span><br><span class="line"></span><br><span class="line">parser.add_argument(<span class="string">&#x27;-a&#x27;</span>, action=<span class="string">&#x27;append&#x27;</span>, dest=<span class="string">&#x27;collection&#x27;</span>,</span><br><span class="line">        default=[],</span><br><span class="line">        <span class="built_in">help</span>=<span class="string">&#x27;Add repeated values to a list&#x27;</span>)</span><br><span class="line"></span><br><span class="line">parser.add_argument(<span class="string">&#x27;-A&#x27;</span>, action=<span class="string">&#x27;append_const&#x27;</span>, dest=<span class="string">&#x27;const_collection&#x27;</span>,</span><br><span class="line">        const=<span class="string">&#x27;value-1-to-append&#x27;</span>,</span><br><span class="line">        default=[],</span><br><span class="line">        <span class="built_in">help</span>=<span class="string">&#x27;Add different values to list&#x27;</span>)</span><br><span class="line">parser.add_argument(<span class="string">&#x27;-B&#x27;</span>, action=<span class="string">&#x27;append_const&#x27;</span>, dest=<span class="string">&#x27;const_collection&#x27;</span>,</span><br><span class="line">        const=<span class="string">&#x27;value-2-to-append&#x27;</span>,</span><br><span class="line">        <span class="built_in">help</span>=<span class="string">&#x27;Add different values to list&#x27;</span>)</span><br><span class="line"></span><br><span class="line">results = parser.parse_args()</span><br><span class="line"><span class="built_in">print</span> <span class="string">&#x27;simple_value     =&#x27;</span>, results.simple_value</span><br><span class="line"><span class="built_in">print</span> <span class="string">&#x27;constant_value   =&#x27;</span>, results.constant_value</span><br><span class="line"><span class="built_in">print</span> <span class="string">&#x27;boolean_switch   =&#x27;</span>, results.boolean_switch</span><br><span class="line"><span class="built_in">print</span> <span class="string">&#x27;collection       =&#x27;</span>, results.collection</span><br><span class="line"><span class="built_in">print</span> <span class="string">&#x27;const_collection =&#x27;</span>, results.const_collection</span><br></pre></td></tr></table></figure>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%89%93%E5%8C%85%E4%B8%80%E4%B8%AA-python-%E9%A1%B9%E7%9B%AE"><span class="toc-number">1.</span> <span class="toc-text"> 打包一个 python 项目</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E9%A1%B9%E7%9B%AE%E7%9A%84%E5%88%86%E5%8F%91%E6%89%93%E5%8C%85"><span class="toc-number">1.1.</span> <span class="toc-text"> 1. 项目的分发打包</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#distutils"><span class="toc-number">1.1.1.</span> <span class="toc-text"> distutils</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#setuptools"><span class="toc-number">1.1.2.</span> <span class="toc-text"> setuptools</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-setuppy-%E7%9A%84%E7%BC%96%E5%86%99"><span class="toc-number">1.2.</span> <span class="toc-text"> 2. setup.py 的编写</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E7%AE%80%E5%8D%95%E7%9A%84-setuppy"><span class="toc-number">1.2.1.</span> <span class="toc-text"> 最简单的 setup.py</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%93%E5%8C%85%E5%93%AA%E4%BA%9B-python-%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.2.</span> <span class="toc-text"> 打包哪些 python 文件？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#packages-%E5%8F%82%E6%95%B0-%E5%88%97%E5%87%BA%E6%89%80%E6%9C%89%E9%9C%80%E8%A6%81%E7%9A%84-package"><span class="toc-number">1.2.2.1.</span> <span class="toc-text"> packages 参数: 列出所有需要的 package</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#py_modules-%E5%8F%82%E6%95%B0-%E5%88%97%E5%87%BA%E7%8B%AC%E7%AB%8B%E7%9A%84%E6%A8%A1%E5%9D%97"><span class="toc-number">1.2.2.2.</span> <span class="toc-text"> py_modules 参数: 列出独立的模块</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E6%B3%A8%E5%86%8C%E4%B8%80%E4%B8%AA%E5%91%BD%E4%BB%A4%E8%A1%8C%E8%84%9A%E6%9C%AC"><span class="toc-number">1.2.3.</span> <span class="toc-text"> 如何注册一个命令行脚本？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-argparse-%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-number">1.3.</span> <span class="toc-text"> 3. argparse 的使用</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&text=【其他】打包一个 python 项目"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&title=【其他】打包一个 python 项目"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&is_video=false&description=【其他】打包一个 python 项目"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【其他】打包一个 python 项目&body=Check out this article: https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&title=【其他】打包一个 python 项目"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&title=【其他】打包一个 python 项目"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&title=【其他】打包一个 python 项目"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&title=【其他】打包一个 python 项目"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&name=【其他】打包一个 python 项目&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2021/06/python-setup%E7%9A%84%E7%BC%96%E5%86%99/&t=【其他】打包一个 python 项目"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Amjac
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

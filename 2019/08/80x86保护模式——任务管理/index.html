@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="80x86保护模式及其编程  任务管理 任务（Task）是处理器可以分配、调度、执行和挂起的一个工作单元。他可以用于执行程序、任务或进程、操作系统服务、中断或异常处理过程和内核代码。 80x86提供了一种机制，用来保存任务的状态、分派任务执行以及从一个任务切换到另一个任务。当工作在保护模式下，处理器所有运行都在任务中。即使是简单系统也必须至少定义一个任务。更为复杂的系统可以使用处理器的任务管理功">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Linux 0.12】80x86保护模式——任务管理">
+<meta property="og:url" content="https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="Amjac 的博客">
+<meta property="og:description" content="80x86保护模式及其编程  任务管理 任务（Task）是处理器可以分配、调度、执行和挂起的一个工作单元。他可以用于执行程序、任务或进程、操作系统服务、中断或异常处理过程和内核代码。 80x86提供了一种机制，用来保存任务的状态、分派任务执行以及从一个任务切换到另一个任务。当工作在保护模式下，处理器所有运行都在任务中。即使是简单系统也必须至少定义一个任务。更为复杂的系统可以使用处理器的任务管理功">
+<meta property="og:locale" content="zh_CH">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/1565068363411.png">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/2012033110185826.png">
+<meta property="og:image" content="https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/20170701172031830.jfif">
+<meta property="article:published_time" content="2019-08-06T04:49:01.000Z">
+<meta property="article:modified_time" content="2021-06-30T09:15:20.099Z">
+<meta property="article:author" content="Amjac">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/1565068363411.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>【Linux 0.12】80x86保护模式——任务管理</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post " href="/2019/08/Linux%E5%86%85%E6%A0%B8%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E2%80%94%E2%80%94Linux%E5%86%85%E6%A0%B8%E6%A8%A1%E5%BC%8F%E4%B8%8E%E4%BD%93%E7%B3%BB/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post " href="/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E5%92%8C%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&text=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&title=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&is_video=false&description=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【Linux 0.12】80x86保护模式——任务管理&body=Check out this article: https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&title=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&title=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&title=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&title=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&name=【Linux 0.12】80x86保护模式——任务管理&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&t=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E5%8F%8A%E5%85%B6%E7%BC%96%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text"> 80x86保护模式及其编程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86"><span class="toc-number">1.1.</span> <span class="toc-text"> 任务管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E7%9A%84%E7%BB%93%E6%9E%84%E5%92%8C%E7%8A%B6%E6%80%81"><span class="toc-number">1.1.1.</span> <span class="toc-text"> 任务的结构和状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E7%9A%84%E6%89%A7%E8%A1%8C"><span class="toc-number">1.1.2.</span> <span class="toc-text"> 任务的执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">1.1.3.</span> <span class="toc-text"> 任务管理数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E4%BB%BB%E5%8A%A1%E7%8A%B6%E6%80%81%E6%AE%B5tss"><span class="toc-number">1.1.3.1.</span> <span class="toc-text"> 1. 任务状态段TSS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-tss%E6%8F%8F%E8%BF%B0%E7%AC%A6"><span class="toc-number">1.1.3.2.</span> <span class="toc-text"> 2. TSS描述符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E4%BB%BB%E5%8A%A1%E5%AF%84%E5%AD%98%E5%99%A8tr%E5%92%8C%E4%BB%BB%E5%8A%A1%E9%97%A8%E6%8F%8F%E8%BF%B0%E7%AC%A6"><span class="toc-number">1.1.3.3.</span> <span class="toc-text"> 3. 任务寄存器TR和任务门描述符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E4%BB%BB%E5%8A%A1%E9%97%A8%E6%8F%8F%E8%BF%B0%E7%AC%A6"><span class="toc-number">1.1.3.4.</span> <span class="toc-text"> 4. 任务门描述符</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E5%88%87%E6%8D%A2"><span class="toc-number">1.1.4.</span> <span class="toc-text"> 任务切换</span></a></li></ol></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        【Linux 0.12】80x86保护模式——任务管理
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Amjac</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2019-08-06T04:49:01.000Z" itemprop="datePublished">2019-08-06</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/Linux%E5%AD%A6%E4%B9%A0/">Linux学习</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Linux/" rel="tag">Linux</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="80x86保护模式及其编程"><a class="markdownIt-Anchor" href="#80x86保护模式及其编程"></a> 80x86保护模式及其编程</h1>
+<h2 id="任务管理"><a class="markdownIt-Anchor" href="#任务管理"></a> 任务管理</h2>
+<p>任务（Task）是处理器可以分配、调度、执行和挂起的一个工作单元。他可以用于执行程序、任务或进程、操作系统服务、中断或异常处理过程和内核代码。</p>
+<p>80x86提供了一种机制，用来保存任务的状态、分派任务执行以及从一个任务切换到另一个任务。当工作在保护模式下，处理器所有运行都在任务中。即使是简单系统也必须至少定义一个任务。更为复杂的系统可以使用处理器的任务管理功能来支持多任务应用。</p>
+<p>80x86提供了多任务的硬件支持。任务是一个正在运行的程序，或者是一个等待准备运行的程序。通过中断、异常、跳转或者调用，我们可以执行一个任务。当这些控制转移形式之一和某个描述符表中指定项的内容一起使用时，那么这个描述符就是一类导致新任务开始执行的描述符（？？）。描述符表中和任务相关的描述符有两类：任务状态段描述符，任务门。当执行权传给其中一类描述符时，会造成任务切换。</p>
+<blockquote>
+<p>任务的切换很像过程调用，但是会保存更多的处理器状态信息。任务切换会把控制权几乎完全转移到一个新的执行环境，即新任务的执行环境。这种转移操作要求保存处理器中<strong>几乎所有寄存器的当前内容，包括标志寄存器EFLAGS和所有段寄存器</strong>。与过程不同，任务不可重入。任务切换不会把任何信息压入堆栈，处理器的状态信息都被保存在内存中的称为任务状态段（TSS）的数据结构中。</p>
+</blockquote>
+<h3 id="任务的结构和状态"><a class="markdownIt-Anchor" href="#任务的结构和状态"></a> 任务的结构和状态</h3>
+<p>任务由两部分组成：</p>
+<ul>
+<li>任务执行空间：代码段，若干数据段，堆栈段（每个特权级都需要各自的堆栈段）</li>
+<li>TSS：指定构成任务执行空间的各个段，位任务状态信息提供存储空间，在多任务环境下为任务之间的链接提供处理方法。</li>
+</ul>
+<p><img src="/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/1565068363411.png" alt="任务的结构和状态"></p>
+<p>一个任务的使用由其TSS段选择符决定。当一个任务被加载到处理器执行时，该任务的段选择符、基地址、段限长、TSS段描述符属性等会被加载到任务寄存器TR（Task Register）。如果使用了分页机制，页目录表的基地址会加载到CR3中。</p>
+<p>当前任务的状态由处理器的以下内容组成：</p>
+<ul>
+<li>所有通用寄存器和段寄存器</li>
+<li>EFLAGS，EIP，CR3，TR和LDTR</li>
+<li>段寄存器指定的任务当前执行空间</li>
+<li>I/O 映射位图基地址和I/O位图信息（TSS中）</li>
+<li>特权级0,1,2的堆栈指针（TSS中）</li>
+<li>链接到前一个任务的链指针（在TSS中）</li>
+</ul>
+<h3 id="任务的执行"><a class="markdownIt-Anchor" href="#任务的执行"></a> 任务的执行</h3>
+<p>软件或处理器可以使用以下方法之一来调度一个任务：</p>
+<ul>
+<li>CALL指令，明确调用一个任务</li>
+<li>JMP指令，明确跳转到一个任务（Linux 内核使用的方式）</li>
+<li>（由处理器）隐式调用一个中断句柄处理任务</li>
+<li>隐含地调用一个异常句柄处理任务</li>
+</ul>
+<p>所有任务调度的方法都会使用一个指向任务门或者任务TSS段的短选择符来确定一个任务。</p>
+<p>调度一个任务执行时，当前正在运行任务和任务之间会自动发生任务切换。在任务切换期间，当前运行任务的执行环境（称为<strong>任务的状态</strong>或者<strong>上下文</strong>）会被保存到它的TSS中并暂停任务执行。此后新调度任务的上下文会被加载到处理器，并且从加载的EIP指向的指令处开始执行新任务。</p>
+<p><strong>如果当前执行任务调用了被调用的新任务，那么调用者的TSS段选择符会保存在被调用者的TSS，从而提供一个返回调用者的链接。</strong>（任务不能调用或跳转自己，即不可递归）</p>
+<p>作为任务切换操作的一部分，处理器也会切换到另一个LDT，从而允许<strong>每个任务对基于LDT的段具有不同逻辑到物理地址的映射</strong>。同时，页目录寄存器CR3也会在切换时被重新加载，因此<strong>不同任务可以有自己的一套页表</strong>。</p>
+<h3 id="任务管理数据结构"><a class="markdownIt-Anchor" href="#任务管理数据结构"></a> 任务管理数据结构</h3>
+<h4 id="1-任务状态段tss"><a class="markdownIt-Anchor" href="#1-任务状态段tss"></a> 1. 任务状态段TSS</h4>
+<p>用于恢复一个任务执行的处理器状态信息保存在称为任务状态段TSS的段中。</p>
+<p><img src="/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/2012033110185826.png" alt="任务状态段TSS"></p>
+<p>TSS的字段可以分为两类：动态字段和静态字段。</p>
+<p>动态字段：当任务切换而被挂起时，处理器会自动更新的字段。</p>
+<ul>
+<li>通用寄存器字段：EDI，ESI，EAX，EBX等等</li>
+<li>段选择符字段：保存ES，CS等段寄存器的内容</li>
+<li>指令指针EIP字段</li>
+<li>先前任务链接（Previous Task Link）：含有铅一个任务的段选择符。该字段允许任务通过使用IRET指令返回到前一个任务。</li>
+</ul>
+<p>静态字段：该字段在任务被创建时设置，处理器只读取不修改</p>
+<ul>
+<li>LDT段选择符字段</li>
+<li>CR3控制寄存器字段</li>
+<li>特权级位0,1,2的堆栈指针</li>
+<li>调试陷阱（Debug Trap）T标志字段</li>
+<li>IO位图基地址字段</li>
+</ul>
+<h4 id="2-tss描述符"><a class="markdownIt-Anchor" href="#2-tss描述符"></a> 2. TSS描述符</h4>
+<p>TSS描述符只能放在GDT中。</p>
+<p><img src="/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/20170701172031830.jfif" alt="TSS段描述符格式"></p>
+<p>TYPE字段的B用于指明任务是否处于忙状态。</p>
+<blockquote>
+<p>处于忙状态的任务指的是当前正在执行的任务，或者等待执行（被挂起）的任务</p>
+</blockquote>
+<h4 id="3-任务寄存器tr和任务门描述符"><a class="markdownIt-Anchor" href="#3-任务寄存器tr和任务门描述符"></a> 3. 任务寄存器TR和任务门描述符</h4>
+<p>任务寄存器TR存放16bit的段选择符以及当前任务TSS段的整个描述符（不可见部分）。这些信息是从GDT中当前任务的TSS描述符中复制过来的。处理器使用TR的不可见部分来缓冲TSS段的描述符内容。</p>
+<h4 id="4-任务门描述符"><a class="markdownIt-Anchor" href="#4-任务门描述符"></a> 4. 任务门描述符</h4>
+<p>任务门描述符提供对一个任务间接，受保护的引用。</p>
+<p>任务门描述符可以被存放在GDT、LDT、IDT中。</p>
+<p>任务门描述符的TSS选择符字段指向GDT的一个TSS段描述符，其RPL域不使用。门描述符的DPL用于在任务切换时控制对TSS段的访问。当程序通过任务门调用或跳转到另一个任务时，程序的CPL以及指向任务门的门选择符的RPL必须小于或等于任务门描述符的DPL。</p>
+<h3 id="任务切换"><a class="markdownIt-Anchor" href="#任务切换"></a> 任务切换</h3>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E5%8F%8A%E5%85%B6%E7%BC%96%E7%A8%8B"><span class="toc-number">1.</span> <span class="toc-text"> 80x86保护模式及其编程</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86"><span class="toc-number">1.1.</span> <span class="toc-text"> 任务管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E7%9A%84%E7%BB%93%E6%9E%84%E5%92%8C%E7%8A%B6%E6%80%81"><span class="toc-number">1.1.1.</span> <span class="toc-text"> 任务的结构和状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E7%9A%84%E6%89%A7%E8%A1%8C"><span class="toc-number">1.1.2.</span> <span class="toc-text"> 任务的执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">1.1.3.</span> <span class="toc-text"> 任务管理数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E4%BB%BB%E5%8A%A1%E7%8A%B6%E6%80%81%E6%AE%B5tss"><span class="toc-number">1.1.3.1.</span> <span class="toc-text"> 1. 任务状态段TSS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-tss%E6%8F%8F%E8%BF%B0%E7%AC%A6"><span class="toc-number">1.1.3.2.</span> <span class="toc-text"> 2. TSS描述符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E4%BB%BB%E5%8A%A1%E5%AF%84%E5%AD%98%E5%99%A8tr%E5%92%8C%E4%BB%BB%E5%8A%A1%E9%97%A8%E6%8F%8F%E8%BF%B0%E7%AC%A6"><span class="toc-number">1.1.3.3.</span> <span class="toc-text"> 3. 任务寄存器TR和任务门描述符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E4%BB%BB%E5%8A%A1%E9%97%A8%E6%8F%8F%E8%BF%B0%E7%AC%A6"><span class="toc-number">1.1.3.4.</span> <span class="toc-text"> 4. 任务门描述符</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E5%88%87%E6%8D%A2"><span class="toc-number">1.1.4.</span> <span class="toc-text"> 任务切换</span></a></li></ol></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&text=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&title=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&is_video=false&description=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【Linux 0.12】80x86保护模式——任务管理&body=Check out this article: https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&title=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&title=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&title=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&title=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&name=【Linux 0.12】80x86保护模式——任务管理&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/&t=【Linux 0.12】80x86保护模式——任务管理"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Amjac
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

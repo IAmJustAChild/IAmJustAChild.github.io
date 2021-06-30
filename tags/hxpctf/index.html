@@ -6,10 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-    <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
+    <meta name="description" content="Something for nothing?">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Amjac 的博客">
 <meta property="og:url" content="https://iamjustachild.github.io/tags/hxpctf/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:site_name" content="Amjac 的博客">
+<meta property="og:description" content="Something for nothing?">
 <meta property="og:locale" content="zh_CH">
 <meta property="article:author" content="Amjac">
 <meta name="twitter:card" content="summary">
@@ -44,10 +46,19 @@
     
 	<!-- mathjax -->
 	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
 <meta name="generator" content="Hexo 5.4.0"></head>
 
-<body class="max-width mx-auto px3 ltr">
-    
+<body class="max-width mx-auto px3 ltr">    
     <div class="content index py4">
         
           <header id="header">
@@ -58,7 +69,7 @@
     
   
     <div id="title">
-      <h1>Hexo</h1>
+      <h1>Amjac 的博客</h1>
     </div>
   </a>
   <div id="nav">
@@ -67,13 +78,13 @@
         <a href="#" aria-label="Menu"><i class="fas fa-bars fa-2x"></i></a>
       </li>
        
-        <li><a href="/">Home</a></li>
+        <li><a href="/">主页</a></li>
        
-        <li><a href="/about/">About</a></li>
+        <li><a href="/tags/">标签</a></li>
        
-        <li><a href="/archives/">Writing</a></li>
+        <li><a href="/categories/">分类</a></li>
        
-        <li><a href="/projects_url">Projects</a></li>
+        <li><a href="/archives/">归档</a></li>
       
     </ul>
   </div>
@@ -85,6 +96,32 @@
     
     
     
+    
+      
+      
+      
+      
+        <li class="post-year"><h2>2020</h2></li>
+      
+      <li class="post-item">
+        
+    <div class="meta">
+      
+        
+          <time datetime="2020-01-15T09:25:59.889Z" itemprop="datePublished">2020-01-15</time>
+        
+      
+    </div>
+
+
+        <span>
+    
+        <a class="" href="/2020/01/git%E5%85%A5%E9%97%A8/">【工具】Git入门学习</a>
+    
+
+
+</span>
+      </li>
     
       
       
@@ -130,13 +167,13 @@
     <nav>
       <ul>
          
-          <li><a href="/">Home</a></li>
+          <li><a href="/">主页</a></li>
          
-          <li><a href="/about/">About</a></li>
+          <li><a href="/tags/">标签</a></li>
          
-          <li><a href="/archives/">Writing</a></li>
+          <li><a href="/categories/">分类</a></li>
          
-          <li><a href="/projects_url">Projects</a></li>
+          <li><a href="/archives/">归档</a></li>
         
       </ul>
     </nav>
@@ -176,5 +213,20 @@
 <!-- Disqus Comments -->
 
 
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

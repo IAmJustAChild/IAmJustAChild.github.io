@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="内核代码  在 init&#x2F;main.c 的 main 函数中，调用了 trap_init() 函数对硬件中断向量进行初始化。trap_init() 位于 kernel&#x2F;traps.c，内部负责设置向量号对应的处理程序。而处理程序的定义则位于 asm.s 中。   asm.s 程序 asm.c 程序包括大部分 CPU 探测到的异常故障处理的底层代码，也包括数学协处理器的异常处理。 应当重点关注故障">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Linux 0.12】内核代码——中断与异常处理">
+<meta property="og:url" content="https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/index.html">
+<meta property="og:site_name" content="Amjac 的博客">
+<meta property="og:description" content="内核代码  在 init&#x2F;main.c 的 main 函数中，调用了 trap_init() 函数对硬件中断向量进行初始化。trap_init() 位于 kernel&#x2F;traps.c，内部负责设置向量号对应的处理程序。而处理程序的定义则位于 asm.s 中。   asm.s 程序 asm.c 程序包括大部分 CPU 探测到的异常故障处理的底层代码，也包括数学协处理器的异常处理。 应当重点关注故障">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2020-09-15T13:02:00.000Z">
+<meta property="article:modified_time" content="2021-06-30T09:15:20.089Z">
+<meta property="article:author" content="Amjac">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>【Linux 0.12】内核代码——中断与异常处理</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post " href="/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E6%A6%82%E8%BF%B0/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post " href="/2020/01/git%E5%85%A5%E9%97%A8/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&text=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&title=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&is_video=false&description=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【Linux 0.12】内核代码——中断与异常处理&body=Check out this article: https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&title=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&title=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&title=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&title=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&name=【Linux 0.12】内核代码——中断与异常处理&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&t=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81"><span class="toc-number">1.</span> <span class="toc-text"> 内核代码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#asms-%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.1.</span> <span class="toc-text"> asm.s 程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#trapc-%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.2.</span> <span class="toc-text"> trap.c 程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sys_calls-%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.3.</span> <span class="toc-text"> sys_call.s 程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E5%8F%91%E7%94%9F%E7%9A%84%E5%85%A8%E8%BF%87%E7%A8%8B"><span class="toc-number">1.4.</span> <span class="toc-text"> 附：系统调用发生的全过程</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        【Linux 0.12】内核代码——中断与异常处理
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Amjac</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-09-15T13:02:00.000Z" itemprop="datePublished">2020-09-15</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/Linux%E5%AD%A6%E4%B9%A0/">Linux学习</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Linux/" rel="tag">Linux</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="内核代码"><a class="markdownIt-Anchor" href="#内核代码"></a> 内核代码</h1>
+<blockquote>
+<p>在 init/main.c 的 main 函数中，调用了 <code>trap_init()</code> 函数对硬件中断向量进行初始化。<code>trap_init()</code> 位于 kernel/traps.c，内部负责设置向量号对应的处理程序。而处理程序的定义则位于 asm.s 中。</p>
+</blockquote>
+<h2 id="asms-程序"><a class="markdownIt-Anchor" href="#asms-程序"></a> asm.s 程序</h2>
+<p>asm.c 程序包括大部分 CPU 探测到的<strong>异常故障处理</strong>的底层代码，也包括数学协处理器的异常处理。</p>
+<p>应当重点关注故障处理时的内核堆栈变化。</p>
+<p>以 <code>divide_error</code> 为例（<code>divide_error</code> 无出错号）：</p>
+<blockquote>
+<p>个人理解：出错号是传递给中断服务程序的一个参数。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">_divide_error:</span><br><span class="line">	push dword ptr _do_divide_error ;// 首先把将要调用的函数地址入栈。这段程序的出错号为0。</span><br><span class="line">no_error_code: ;// 这里是无出错号处理的入口处，见下面第55 行等。</span><br><span class="line">	xchg [esp],eax ;// _do_divide_error 的地址 -&gt; eax，eax 被交换入栈。</span><br><span class="line">	push ebx</span><br><span class="line">	push ecx</span><br><span class="line">	push edx</span><br><span class="line">	push edi</span><br><span class="line">	push esi</span><br><span class="line">	push ebp</span><br><span class="line">	push ds ;// ！！16 位的段寄存器入栈后也要占用4 个字节。</span><br><span class="line">	push es</span><br><span class="line">	push fs</span><br><span class="line">	push 0 ;// &quot;error code&quot; ;// 将出错码入栈。</span><br><span class="line">	lea edx,[esp+44] ;// 取原调用返回地址处堆栈指针位置，并压入堆栈。</span><br><span class="line">	push edx</span><br><span class="line">	mov edx,10h ;// 内核代码数据段选择符。</span><br><span class="line">	mov ds,dx</span><br><span class="line">	mov es,dx</span><br><span class="line">	mov fs,dx</span><br><span class="line">	call eax ;// 调用C 函数do_divide_error()。</span><br><span class="line">	add esp,8 ;// 让堆栈指针重新指向寄存器fs 入栈处。</span><br><span class="line">	pop fs</span><br><span class="line">	pop es</span><br><span class="line">	pop ds</span><br><span class="line">	pop ebp</span><br><span class="line">	pop esi</span><br><span class="line">	pop edi</span><br><span class="line">	pop edx</span><br><span class="line">	pop ecx</span><br><span class="line">	pop ebx</span><br><span class="line">	pop eax ;// 弹出原来eax 中的内容。</span><br><span class="line">	iretd</span><br></pre></td></tr></table></figure>
+<ol>
+<li>在开始执行相应的中断服务程序之前，堆栈指针 esp 指向中断返回地址。（类似函数调用）</li>
+<li>然后压入处理程序地址 <code>push dword ptr _do_divide_error</code>，病调用  <code>xchg</code> 将处理程序地址保存至 eax，eax 的值则入栈，完美。</li>
+<li>保存其他各种寄存器的值</li>
+<li>调用中断服务程序</li>
+<li>恢复寄存器，中断返回</li>
+</ol>
+<blockquote>
+<p>事实上，中断服务程序的代码并没有显示，asm.c 似乎只定义了保存现场环境的功能。</p>
+</blockquote>
+<h2 id="trapc-程序"><a class="markdownIt-Anchor" href="#trapc-程序"></a> trap.c 程序</h2>
+<p>主要包括一些 asm.c 中调用的相应的 C 函数。其中  <code>die()</code> 函数用于在中断处理中显示详细的出错信息。</p>
+<p><code>trap_init()</code> 函数负责初始化中断向量。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//// 设置陷阱门函数。</span></span><br><span class="line"><span class="comment">// 参数：n - 中断号；addr - 中断程序偏移地址。</span></span><br><span class="line"><span class="comment">// &amp;idt[n]对应中断号在中断描述符表中的偏移值；中断描述符的类型是15，特权级是0。</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> set_trap_gate(n,addr) \</span></span><br><span class="line"><span class="meta">_set_gate((unsigned long*)(&amp;(idt[n])),15,0,(unsigned long)addr)</span></span><br><span class="line"><span class="comment">//// 设置系统调用门函数。</span></span><br><span class="line"><span class="comment">// 参数：n - 中断号；addr - 中断程序偏移地址。</span></span><br><span class="line"><span class="comment">// &amp;idt[n]对应中断号在中断描述符表中的偏移值；中断描述符的类型是15，特权级是3。</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> set_system_gate(n,addr) \</span></span><br><span class="line"><span class="meta">_set_gate((unsigned long*)(&amp;(idt[n])),15,3,(unsigned long)addr)</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>trap_init()</code> 函数里使用了上述两个宏定义来初始化中断向量。他们的区别在于特权级不同。<code>set_system_gate</code> 特权级是 3，可以由用户态程序发出。</p>
+</blockquote>
+<h2 id="sys_calls-程序"><a class="markdownIt-Anchor" href="#sys_calls-程序"></a> sys_call.s 程序</h2>
+<p>系统调用使用中断 int 0x80 和功能号（保存在 eax） 来使用内核提供的各种功能服务。</p>
+<p>对于所有系统调用的实现函数，内核将他们按照系统调用功能号按顺序排列成一张函数指针表，然后在 int 0x80 的处理过程中根据 eax 的功能号调用对应系统调用函数。</p>
+<blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 位于 include/linux/sys.h</span></span><br><span class="line">fn_ptr sys_call_table[] = &#123; sys_setup, sys_exit, sys_fork, sys_read,</span><br><span class="line">  sys_write, sys_open, sys_close, sys_waitpid, sys_creat, sys_link,</span><br><span class="line">  sys_unlink, sys_execve, sys_chdir, sys_time, sys_mknod, sys_chmod,</span><br><span class="line">  sys_chown, sys_break, sys_stat, sys_lseek, sys_getpid, sys_mount,</span><br><span class="line">  sys_umount, sys_setuid, sys_getuid, sys_stime, sys_ptrace, sys_alarm,</span><br><span class="line">  sys_fstat, sys_pause, sys_utime, sys_stty, sys_gtty, sys_access,</span><br><span class="line">  sys_nice, sys_ftime, sys_sync, sys_kill, sys_rename, sys_mkdir,</span><br><span class="line">  sys_rmdir, sys_dup, sys_pipe, sys_times, sys_prof, sys_brk, sys_setgid,</span><br><span class="line">  sys_getgid, sys_signal, sys_geteuid, sys_getegid, sys_acct, sys_phys,</span><br><span class="line">  sys_lock, sys_ioctl, sys_fcntl, sys_mpx, sys_setpgid, sys_ulimit,</span><br><span class="line">  sys_uname, sys_umask, sys_chroot, sys_ustat, sys_dup2, sys_getppid,</span><br><span class="line">  sys_getpgrp, sys_setsid, sys_sigaction, sys_sgetmask, sys_ssetmask,</span><br><span class="line">  sys_setreuid, sys_setregid</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>sys_call.s 主要实现了：</p>
+<ol>
+<li>int 0x80 的入口处理过程以及信号检测处理</li>
+<li>实现了两个系统功能的底层接口（sys_execve 和 sys_fork）</li>
+<li>其他非系统调用的中断处理程序，包括 int16, int7, int32 等</li>
+</ol>
+<p>对于<strong>软中断</strong>，主要是先为 C 函数处理程序做准备，压入参数，或者设置寄存器，然后调用对应的服务程序（C 语言编写）。处理完成后检测当前任务的信号位图，处理信号。</p>
+<p>对于<strong>硬件中断</strong>， 。。。。。</p>
+<p>对于<strong>系统调用</strong>，基本上对应的程序都是 C 语言程序：</p>
+<ol>
+<li>首先检查系统调用号 (eax) 是否有效</li>
+<li>将一些会用到的寄存器保存到栈中。（linux 内核默认把段寄存器 ds, es 用于内核数据段，fs 用于用户数据段）</li>
+<li>通过一个地址跳转表 <code>sys_call_table</code> 调用对应的系统调用函数</li>
+<li>函数返回后，将返回值压入堆栈保存起来</li>
+<li>后续会执行调度程序，处理信号等等</li>
+</ol>
+<h2 id="附系统调用发生的全过程"><a class="markdownIt-Anchor" href="#附系统调用发生的全过程"></a> 附：系统调用发生的全过程</h2>
+<p>在系统启动时，会在 <code>sched_init(void)</code> 函数中调用 <code>set_system_gate(0x80,&amp;system_call)</code> ，设置中断向量号0x80的中断描述符：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// kernel/sched.c sched_init 函数</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> set_system_gate(n,addr) \</span></span><br><span class="line"><span class="meta">_set_gate((unsigned long*)(&amp;(idt[n])),15,3,(unsigned long)addr)</span></span><br><span class="line">set_system_gate(<span class="number">0x80</span>, &amp;system_call);</span><br></pre></td></tr></table></figure>
+<p>而 <code>system_call</code> 函数则定义于 kernel/system_call.s</p>
+<p>注意：在进入 <code>system_call()</code> 函数之前，eax，ebx，ecx，edx</p>
+<ol>
+<li>首先检查系统调用号 (eax) 是否有效</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">_system_call:</span><br><span class="line">	cmp eax,nr_system_calls-1 ;// 调用号如果超出范围的话就在eax 中置-1 并退出。</span><br><span class="line">	ja bad_sys_call</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>将一些会用到的寄存器保存到栈中。（linux 内核默认把段寄存器 ds, es 用于内核数据段，fs 用于用户数据段）</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">push ds ;// 保存原段寄存器值。</span><br><span class="line">push es</span><br><span class="line">push fs</span><br><span class="line">push edx ;// ebx,ecx,edx 中放着系统调用相应的C 语言函数的调用参数。</span><br><span class="line">push ecx ;// push %ebx,%ecx,%edx as parameters</span><br><span class="line">push ebx ;// to the system call</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>通过一个地址跳转表 <code>sys_call_table</code> 调用对应的系统调用函数</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mov edx,10h ;// set up ds,es to kernel space</span><br><span class="line">mov ds,dx ;// ds,es 指向内核数据段(全局描述符表中数据段描述符)。</span><br><span class="line">mov es,dx</span><br><span class="line">mov edx,17h ;// fs points to local data space</span><br><span class="line">mov fs,dx ;// fs 指向局部数据段(局部描述符表中数据段描述符)。</span><br><span class="line"></span><br><span class="line">call [_sys_call_table+eax*4]</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>为什么 0x10h 指向全局描述符表中的数据段描述符？</p>
+<p>为什么 0x17h 指向局部描述符表中的数据段描述符？</p>
+</blockquote>
+<ol start="4">
+<li>函数返回后，将返回值压入堆栈保存起来</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">push eax ;// 把系统调用号入栈。</span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li>检查当前任务运行的状态。如果不在就绪状态的话，则需要执行调度程序，选取新的任务执行。如果已经是就绪态，但是时间片 counter 为 0，那也需要执行调度程序。</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mov eax,_current </span><br><span class="line">cmp dword ptr [state+eax],0 ;// state</span><br><span class="line">jne reschedule</span><br><span class="line">cmp dword ptr [counter+eax],0 ;// counter</span><br><span class="line">je reschedule</span><br></pre></td></tr></table></figure>
+<ol start="6">
+<li>
+<p>进行到这里，说明当前任务是活跃的，且还有时间片支持运行。但是在返回原程序执行之前，<strong>还需要处理信号</strong>：</p>
+<ol>
+<li>
+<p><strong>如果当前程序是初始任务 task[0]，那么就直接返回</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mov eax,_current ;// task[0] cannot have signals</span><br><span class="line">cmp eax,_task</span><br><span class="line">je l1 ;// 向前(forward)跳转到标号l1。l1是程序的返回代码，恢复了寄存器并执行 iretd</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p><strong>如果当前用户是超级用户，那么就直接返回到原程序执行。</strong>（超级用户不被抢占？内核态程序不抢占原则？）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cmp word ptr [R_CS+esp],0fh ;// was old code segment supervisor ?</span><br><span class="line">jne l1</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>如果原堆栈段选择符不是 0x17（即原来的堆栈不在用户数据段），那么也直接返回</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cmp word ptr [OLR_DSS+esp],17h ;// was stack segment = 0x17 ?</span><br><span class="line">jne l1</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<p>如果不是上述三种情况，则需要<strong>处理信号</strong>。</p>
+<p>获取信号位图，查看当前进程收到了哪些信号，然后获取信号屏蔽码，过滤不允许的信号，然后获取数值最小的被允许的信号。将该信号值作为参数之一，调用 <code>do_signal()</code> 。</p>
+</li>
+</ol>
+</li>
+</ol>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81"><span class="toc-number">1.</span> <span class="toc-text"> 内核代码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#asms-%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.1.</span> <span class="toc-text"> asm.s 程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#trapc-%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.2.</span> <span class="toc-text"> trap.c 程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sys_calls-%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.3.</span> <span class="toc-text"> sys_call.s 程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E5%8F%91%E7%94%9F%E7%9A%84%E5%85%A8%E8%BF%87%E7%A8%8B"><span class="toc-number">1.4.</span> <span class="toc-text"> 附：系统调用发生的全过程</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&text=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&title=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&is_video=false&description=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【Linux 0.12】内核代码——中断与异常处理&body=Check out this article: https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&title=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&title=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&title=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&title=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&name=【Linux 0.12】内核代码——中断与异常处理&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/&t=【Linux 0.12】内核代码——中断与异常处理"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Amjac
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

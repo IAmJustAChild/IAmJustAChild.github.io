@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Git 入门学习  创建版本库 1234lzh@ubuntu:~&#x2F;workspace$ mkdir learngitlzh@ubuntu:~&#x2F;workspace$ cd learngitlzh@ubuntu:~&#x2F;workspace&#x2F;learngit$ pwd&#x2F;home&#x2F;lzh&#x2F;workspace&#x2F;learngit 将目录 &#x2F;home&#x2F;lzh&#x2F;workspace&#x2F;learngit 初始化为一个仓库">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【工具】Git入门学习">
+<meta property="og:url" content="https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/index.html">
+<meta property="og:site_name" content="Amjac 的博客">
+<meta property="og:description" content="Git 入门学习  创建版本库 1234lzh@ubuntu:~&#x2F;workspace$ mkdir learngitlzh@ubuntu:~&#x2F;workspace$ cd learngitlzh@ubuntu:~&#x2F;workspace&#x2F;learngit$ pwd&#x2F;home&#x2F;lzh&#x2F;workspace&#x2F;learngit 将目录 &#x2F;home&#x2F;lzh&#x2F;workspace&#x2F;learngit 初始化为一个仓库">
+<meta property="og:locale" content="zh_CH">
+<meta property="og:image" content="https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/0.jfif">
+<meta property="og:image" content="https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/0-1578537261260.png">
+<meta property="article:published_time" content="2020-01-15T09:25:59.889Z">
+<meta property="article:modified_time" content="2021-06-30T09:27:14.275Z">
+<meta property="article:author" content="Amjac">
+<meta property="article:tag" content="writeup">
+<meta property="article:tag" content="hxpctf">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/0.jfif">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>【工具】Git入门学习</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post " href="/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E4%B8%AD%E6%96%AD%E4%B8%8E%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post " href="/2019/11/%E5%88%9D%E5%A7%8B%E5%8C%96%E7%A8%8B%E5%BA%8F/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&text=【工具】Git入门学习"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&title=【工具】Git入门学习"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&is_video=false&description=【工具】Git入门学习"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【工具】Git入门学习&body=Check out this article: https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&title=【工具】Git入门学习"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&title=【工具】Git入门学习"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&title=【工具】Git入门学习"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&title=【工具】Git入门学习"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&name=【工具】Git入门学习&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&t=【工具】Git入门学习"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#git-%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0"><span class="toc-number">1.</span> <span class="toc-text"> Git 入门学习</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E7%89%88%E6%9C%AC%E5%BA%93"><span class="toc-number">1.1.</span> <span class="toc-text"> 创建版本库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%9B%9E%E9%80%80"><span class="toc-number">1.2.</span> <span class="toc-text"> 版本回退</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%88%E5%B9%B6%E5%A4%9A%E6%AC%A1-commit"><span class="toc-number">1.3.</span> <span class="toc-text"> 合并多次 commit</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E5%8C%BA%E5%92%8C%E6%9A%82%E5%AD%98%E5%8C%BA"><span class="toc-number">1.4.</span> <span class="toc-text"> 工作区和暂存区</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E5%8C%BAworking-directory"><span class="toc-number">1.4.1.</span> <span class="toc-text"> 工作区（Working Directory）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%BA%93repository"><span class="toc-number">1.4.2.</span> <span class="toc-text"> 版本库（Repository）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%92%A4%E9%94%80%E4%BF%AE%E6%94%B9"><span class="toc-number">1.5.</span> <span class="toc-text"> 撤销修改</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E6%96%87%E4%BB%B6"><span class="toc-number">1.6.</span> <span class="toc-text"> 删除文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E5%88%86%E6%94%AF%E4%B8%8E%E5%90%88%E5%B9%B6%E5%88%86%E6%94%AF"><span class="toc-number">1.7.</span> <span class="toc-text"> 创建分支与合并分支</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E5%88%86%E6%94%AF%E5%90%88%E5%B9%B6%E6%97%B6%E7%9A%84%E5%86%B2%E7%AA%81"><span class="toc-number">1.8.</span> <span class="toc-text"> 解决分支合并时的冲突</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E6%94%AF%E7%AE%A1%E7%90%86%E7%AD%96%E7%95%A5"><span class="toc-number">1.9.</span> <span class="toc-text"> 分支管理策略</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        【工具】Git入门学习
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Amjac</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-01-15T09:25:59.889Z" itemprop="datePublished">2020-01-15</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/CTF/">CTF</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/hxpctf/" rel="tag">hxpctf</a>, <a class="tag-link-link" href="/tags/writeup/" rel="tag">writeup</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="git-入门学习"><a class="markdownIt-Anchor" href="#git-入门学习"></a> Git 入门学习</h1>
+<h2 id="创建版本库"><a class="markdownIt-Anchor" href="#创建版本库"></a> 创建版本库</h2>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace$ mkdir learngit</span><br><span class="line">lzh@ubuntu:~/workspace$ cd learngit</span><br><span class="line">lzh@ubuntu:~/workspace/learngit$ pwd</span><br><span class="line">/home/lzh/workspace/learngit</span><br></pre></td></tr></table></figure>
+<p>将目录 <code>/home/lzh/workspace/learngit</code> 初始化为一个仓库：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git init</span><br></pre></td></tr></table></figure>
+<p>这条命令会在当前目录下生成一个隐藏目录 <code>.git</code></p>
+<p>使用语句 <code>git add</code> 和 <code>git commit</code> 来添加文件，和提交修改。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git add readme.txt </span><br><span class="line">lzh@ubuntu:~/workspace/learngit$ git commit -m &quot;add readme.txt&quot;</span><br><span class="line">[master (root-commit) f9ab921] add readme.txt</span><br><span class="line"> 1 file changed, 1 insertion(+)</span><br><span class="line"> create mode 100644 readme.txt</span><br></pre></td></tr></table></figure>
+<p><code>git status</code> 用于查看 git 当前的状态。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git status</span><br><span class="line">On branch master</span><br><span class="line">nothing to commit, working tree clean</span><br></pre></td></tr></table></figure>
+<p>这表示没有需要提交的更改。我们修改一下 readme.txt 的内容，再查看一次：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git status</span><br><span class="line">On branch master</span><br><span class="line">Changes not staged for commit:</span><br><span class="line">  (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)</span><br><span class="line">  (use &quot;git checkout -- &lt;file&gt;...&quot; to discard changes in working directory)</span><br><span class="line"></span><br><span class="line">	modified:   readme.txt</span><br><span class="line"></span><br><span class="line">no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>git 告诉我们 readme.txt 被修改过了。我们可以通过 <code>git diff</code> 命令来查看它哪些地方被修改了：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git diff readme.txt</span><br><span class="line">diff --git a/readme.txt b/readme.txt</span><br><span class="line">index 1f45bc7..ebf599b 100644</span><br><span class="line">--- a/readme.txt</span><br><span class="line">+++ b/readme.txt</span><br><span class="line">@@ -1 +1,2 @@</span><br><span class="line">-it&#x27;s a readme file.</span><br><span class="line">\ No newline at end of file</span><br><span class="line">+it&#x27;s a readme file.</span><br><span class="line">+Edit for the first time.</span><br><span class="line">\ No newline at end of file</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>在了解了 readme.txt 被如何修改之后，再将它<strong>提交到仓库</strong>。提交修改和提交新文件的操作是相同的，即先 <code>git add</code> 再 <code>git commit</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git add readme.txt</span><br><span class="line">lzh@ubuntu:~/workspace/learngit$ git status</span><br><span class="line">On branch master</span><br><span class="line">Changes to be committed:</span><br><span class="line">  (use &quot;git reset HEAD &lt;file&gt;...&quot; to unstage)</span><br><span class="line"></span><br><span class="line">	modified:   readme.txt</span><br><span class="line"></span><br><span class="line">lzh@ubuntu:~/workspace/learngit$ git commit -m &quot;modify readme.txt&quot;</span><br><span class="line">[master 6cc166a] modify readme.txt</span><br><span class="line"> 1 file changed, 2 insertions(+), 1 deletion(-)</span><br><span class="line">lzh@ubuntu:~/workspace/learngit$ git status</span><br><span class="line">On branch master</span><br><span class="line">nothing to commit, working tree clean</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="版本回退"><a class="markdownIt-Anchor" href="#版本回退"></a> 版本回退</h2>
+<p>每次 commit ，就像是进行了一次快照。我们可以选择从一次 commit 中恢复。</p>
+<p>使用 <code>git log</code> 查看：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git log</span><br><span class="line">commit 6cc166a21e5630e8d3a0151ee331c04c5ac2c251 (HEAD -&gt; master)</span><br><span class="line">Author: amjac &lt;amjac_lzh@163.com&gt;</span><br><span class="line">Date:   Sun Jan 5 23:35:38 2020 -0800</span><br><span class="line"></span><br><span class="line">    modify readme.txt</span><br><span class="line"></span><br><span class="line">commit f9ab921e9c9c17eda1038254e0c893c9e0fbe451</span><br><span class="line">Author: amjac &lt;amjac_lzh@163.com&gt;</span><br><span class="line">Date:   Sun Jan 5 23:19:58 2020 -0800</span><br><span class="line"></span><br><span class="line">    add readme.txt</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>在 git 中，<code>HEAD</code> 表示当前版本。现在我们将版本回退到上次 commit 的版本（用 <code>HEAD^</code> 表示上个版本，<code>HEAD^^</code> 表示上上个版本，<code>HEAD~100</code> 表示上 100 个版本。）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git reset --hard HEAD^</span><br><span class="line">HEAD is now at f9ab921 add readme.txt</span><br></pre></td></tr></table></figure>
+<p>此时再查看 git log:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git log</span><br><span class="line">commit f9ab921e9c9c17eda1038254e0c893c9e0fbe451 (HEAD -&gt; master)</span><br><span class="line">Author: amjac &lt;amjac_lzh@163.com&gt;</span><br><span class="line">Date:   Sun Jan 5 23:19:58 2020 -0800</span><br><span class="line"></span><br><span class="line">    add readme.txt</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>可以看到，之前的最新版本已经消失了。当然，只是显示中消失了。如果我们还能记得之前的 sha1 版本号，也可以强制恢复到之前的版本。例如，之前的版本是 <code>6cc166a21e5630e8d3a0</code> ，可以用如下命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git reset --hard 6cc166a21e5630e8d3a0</span><br><span class="line">HEAD is now at 6cc166a modify readme.txt</span><br></pre></td></tr></table></figure>
+<p>当然，这样做必须记得之前版本的版本号。为了避免丢失这些信息，命令 <code>git reflog</code> 可以显示我们每次执行得命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git reflog</span><br><span class="line">6cc166a (HEAD -&gt; master) HEAD@&#123;0&#125;: reset: moving to 6cc166a21e5630e8d3a0</span><br><span class="line">f9ab921 HEAD@&#123;1&#125;: reset: moving to HEAD^</span><br><span class="line">6cc166a (HEAD -&gt; master) HEAD@&#123;2&#125;: commit: modify readme.txt</span><br><span class="line">f9ab921 HEAD@&#123;3&#125;: commit (initial): add readme.txt</span><br></pre></td></tr></table></figure>
+<p>这样就能找到之前的版本号了。</p>
+<h2 id="合并多次-commit"><a class="markdownIt-Anchor" href="#合并多次-commit"></a> 合并多次 commit</h2>
+<p><code>git rebase</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git rebase -i HEAD~4 # 对最近的4个commit进行rebase操作</span><br><span class="line">git rebase -i 9fbf10 # 对 commit id 前几位为 9fbf10 的 commit 之后的 commit 进行 rebase</span><br></pre></td></tr></table></figure>
+<h2 id="工作区和暂存区"><a class="markdownIt-Anchor" href="#工作区和暂存区"></a> 工作区和暂存区</h2>
+<p>Git 的独特之处在于有<strong>暂存区</strong>的概念。</p>
+<h3 id="工作区working-directory"><a class="markdownIt-Anchor" href="#工作区working-directory"></a> 工作区（Working Directory）</h3>
+<p>电脑中能看到的目录。比如 learngit 目录。</p>
+<h3 id="版本库repository"><a class="markdownIt-Anchor" href="#版本库repository"></a> 版本库（Repository）</h3>
+<p>工作区中的隐藏目录 .git 是版本库。版本库包含了很多内容，但最重要的是称为 stage 的暂存区，和 git 为我们自动创建的第一个分支 master，以及指向 master 的指针 HEAD。</p>
+<p><img src="/2020/01/git%E5%85%A5%E9%97%A8/0.jfif" alt="git-repo"></p>
+<p>之前讲到，向 git 版本库中添加内容时，是分两步进行的：</p>
+<ol>
+<li><code>git add</code> ，<strong>将文件修改添加到暂存区</strong></li>
+<li><code>git commit</code>，<strong>将暂存区的所有内容提交到当前分支</strong>。</li>
+</ol>
+<p>即：需要提交的文件都放到暂存区中，然后一次性提交暂存区的所有修改。</p>
+<p>测试一下：新建一个文件 LICENSE，再修改一下 readme.txt，然后查看 status</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git status</span><br><span class="line">On branch master</span><br><span class="line">Changes not staged for commit:</span><br><span class="line">  (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)</span><br><span class="line">  (use &quot;git checkout -- &lt;file&gt;...&quot; to discard changes in working directory)</span><br><span class="line"></span><br><span class="line">	modified:   readme.txt</span><br><span class="line"></span><br><span class="line">Untracked files:</span><br><span class="line">  (use &quot;git add &lt;file&gt;...&quot; to include in what will be committed)</span><br><span class="line"></span><br><span class="line">	LICENSE</span><br><span class="line"></span><br><span class="line">no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="撤销修改"><a class="markdownIt-Anchor" href="#撤销修改"></a> 撤销修改</h2>
+<p><code>git checkout -- filename</code> 可以丢弃工作区的修改。</p>
+<p>命令 <code>git checkout -- readme.txt</code> 的意思是，把 readme.txt 文件再工作区的修改全部撤销，这里有两种情况：</p>
+<ol>
+<li>readme.txt 被修改后，还没有被存放到暂存区，此时撤销修改就<strong>回到和版本库一摸一样的状态</strong>。</li>
+<li>readme.txt 已经被添加到了暂存区，之后又作了修改，此时撤销修改就<strong>回到添加到暂存区之后的状态</strong>。</li>
+</ol>
+<p><strong>总之，git checkout – 命令会让文件恢复到最近一次 git commit 或者 git add 时的状态。</strong></p>
+<p>注意，一定要用 <code>git checkout --</code> ，没有 – 就会变成 <strong>切换到另一个分支</strong> 。</p>
+<p>此外，已经提交到暂存区的修改也可以撤销。</p>
+<p>当修改已经通过 <code>git add</code> 添加到暂存区时，可以使用 <code>git reset</code> 将暂存区的修改撤销掉，退回工作区。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git reset HEAD readme.txt</span><br><span class="line">Unstaged changes after reset:</span><br><span class="line">M	readme.txt</span><br><span class="line">lzh@ubuntu:~/workspace/learngit$ git status</span><br><span class="line">On branch master</span><br><span class="line">Changes to be committed:</span><br><span class="line">  (use &quot;git reset HEAD &lt;file&gt;...&quot; to unstage)</span><br><span class="line"></span><br><span class="line">	new file:   LICENSE</span><br><span class="line"></span><br><span class="line">Changes not staged for commit:</span><br><span class="line">  (use &quot;git add &lt;file&gt;...&quot; to update what will be committed)</span><br><span class="line">  (use &quot;git checkout -- &lt;file&gt;...&quot; to discard changes in working directory)</span><br><span class="line"></span><br><span class="line">	modified:   readme.txt</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>然后再用 git checkout 来撤销工作区的修改，退回版本库。</p>
+<h2 id="删除文件"><a class="markdownIt-Anchor" href="#删除文件"></a> 删除文件</h2>
+<p>在文件管理器中，将没用的文件删除，使用命令 rm 。但此时，工作区和版本库变得不一致了。git status 命令会告诉你哪些文件被删除了。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git status</span><br><span class="line">On branch master</span><br><span class="line">Changes not staged for commit:</span><br><span class="line">  (use &quot;git add/rm &lt;file&gt;...&quot; to update what will be committed)</span><br><span class="line">  (use &quot;git checkout -- &lt;file&gt;...&quot; to discard changes in working directory)</span><br><span class="line"></span><br><span class="line">	deleted:    LICENSE</span><br><span class="line">	modified:   readme.txt</span><br><span class="line"></span><br><span class="line">no changes added to commit (use &quot;git add&quot; and/or &quot;git commit -a&quot;)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>git 显示，LICENSE 文件被删除了，此时有两个选择：</p>
+<ol>
+<li>用 <code>git rm</code> 命令删除，之后 <code>git commit</code>。这样，该文件就从版本库中被删除了。</li>
+<li>删错了，用 <code>git checkout -- LICENSE</code> 来恢复。其实这就是用版本库里的版本来替换工作区里的版本。无论是工作区修改了还是删除，都可以一键还原。但是注意，**只能从版本库中还原！！**如果有未提交到版本库的修改，则无法修复。</li>
+</ol>
+<h2 id="创建分支与合并分支"><a class="markdownIt-Anchor" href="#创建分支与合并分支"></a> 创建分支与合并分支</h2>
+<p>可以创建分支，在分支上开发新功能，测试完成后再同步到 master 分支上。</p>
+<p>创建名为 dev 的分支：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git checkout -b dev</span><br><span class="line">D	LICENSE</span><br><span class="line">M	readme.txt</span><br><span class="line">Switched to a new branch &#x27;dev&#x27;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><code>git checkout -b</code> 表示创建分支并切换，其效果等同于下面两条命令：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git branch dev # 创建分支 dev</span><br><span class="line">git checkout dev # 切换到分支 dev</span><br></pre></td></tr></table></figure>
+<p>使用 <code>git branch</code> 列出（当前分支有 *）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git branch</span><br><span class="line">* dev</span><br><span class="line">  master</span><br></pre></td></tr></table></figure>
+<p>然后进行一通操作。</p>
+<p>切换回 master 分支，将 dev 分支的结果合并到 master 分支上：（git merge）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git merge dev</span><br><span class="line">Updating b480d9a..c8029f6</span><br><span class="line">Fast-forward</span><br><span class="line"> LICENSE    | 1 -</span><br><span class="line"> readme.txt | 3 ++-</span><br><span class="line"> 2 files changed, 2 insertions(+), 2 deletions(-)</span><br><span class="line"> delete mode 100644 LICENSE</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>然后使用 <code>git branch -d</code> 删除分支 dev</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">lzh@ubuntu:~/workspace/learngit$ git branch -d dev</span><br><span class="line">Deleted branch dev (was c8029f6).</span><br><span class="line">lzh@ubuntu:~/workspace/learngit$ git branch</span><br><span class="line">* master</span><br></pre></td></tr></table></figure>
+<p>切换分支也可以使用 <code>git switch</code>，例如：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git switch -c dev # 创建并切换到新分支 dev</span><br><span class="line">git switch master # 切换到已有分支 master</span><br></pre></td></tr></table></figure>
+<h2 id="解决分支合并时的冲突"><a class="markdownIt-Anchor" href="#解决分支合并时的冲突"></a> 解决分支合并时的冲突</h2>
+<p>???</p>
+<h2 id="分支管理策略"><a class="markdownIt-Anchor" href="#分支管理策略"></a> 分支管理策略</h2>
+<p>通常，合并分支时，如果可能，Git 会用 <code>fast forward</code> 模式，此时删除分支后会丢失分支信息。（？？？删除了为什么不丢失？）</p>
+<p>在执行 git merge 时，使用</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git merge --no-ff -m &quot;xxxxxxx&quot; dev</span><br></pre></td></tr></table></figure>
+<p>这样可以把当前分支合并到 dev 分支的同时，生成一个 commit。</p>
+<p>效果如下：</p>
+<p><img src="/2020/01/git%E5%85%A5%E9%97%A8/0-1578537261260.png" alt="git-no-ff-mode"></p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#git-%E5%85%A5%E9%97%A8%E5%AD%A6%E4%B9%A0"><span class="toc-number">1.</span> <span class="toc-text"> Git 入门学习</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E7%89%88%E6%9C%AC%E5%BA%93"><span class="toc-number">1.1.</span> <span class="toc-text"> 创建版本库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%9B%9E%E9%80%80"><span class="toc-number">1.2.</span> <span class="toc-text"> 版本回退</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%88%E5%B9%B6%E5%A4%9A%E6%AC%A1-commit"><span class="toc-number">1.3.</span> <span class="toc-text"> 合并多次 commit</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E5%8C%BA%E5%92%8C%E6%9A%82%E5%AD%98%E5%8C%BA"><span class="toc-number">1.4.</span> <span class="toc-text"> 工作区和暂存区</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E5%8C%BAworking-directory"><span class="toc-number">1.4.1.</span> <span class="toc-text"> 工作区（Working Directory）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%88%E6%9C%AC%E5%BA%93repository"><span class="toc-number">1.4.2.</span> <span class="toc-text"> 版本库（Repository）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%92%A4%E9%94%80%E4%BF%AE%E6%94%B9"><span class="toc-number">1.5.</span> <span class="toc-text"> 撤销修改</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E6%96%87%E4%BB%B6"><span class="toc-number">1.6.</span> <span class="toc-text"> 删除文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E5%88%86%E6%94%AF%E4%B8%8E%E5%90%88%E5%B9%B6%E5%88%86%E6%94%AF"><span class="toc-number">1.7.</span> <span class="toc-text"> 创建分支与合并分支</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E5%88%86%E6%94%AF%E5%90%88%E5%B9%B6%E6%97%B6%E7%9A%84%E5%86%B2%E7%AA%81"><span class="toc-number">1.8.</span> <span class="toc-text"> 解决分支合并时的冲突</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E6%94%AF%E7%AE%A1%E7%90%86%E7%AD%96%E7%95%A5"><span class="toc-number">1.9.</span> <span class="toc-text"> 分支管理策略</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&text=【工具】Git入门学习"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&title=【工具】Git入门学习"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&is_video=false&description=【工具】Git入门学习"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【工具】Git入门学习&body=Check out this article: https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&title=【工具】Git入门学习"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&title=【工具】Git入门学习"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&title=【工具】Git入门学习"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&title=【工具】Git入门学习"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&name=【工具】Git入门学习&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2020/01/git%E5%85%A5%E9%97%A8/&t=【工具】Git入门学习"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Amjac
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

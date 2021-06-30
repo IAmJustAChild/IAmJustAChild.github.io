@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="内存管理 Linux 内核采用分页管理方式，利用页目录和页表结构处理内存的申请和释放操作。内存管理以页面为单位进行的。一个内存页面指的是连续的 4KB 物理内存。  总体功能 80x86 架构下，程序在寻址过程中使用 段地址+段偏移 实现。而该地址并不能直接用于寻找物理地址，因此被称为虚拟地址。 虚拟地址首先通过段管理机制编程一种中间地址形式——32位的线性地址，然后使用分页管理机制将此线性地址">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Linux 0.12】内存管理">
+<meta property="og:url" content="https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/index.html">
+<meta property="og:site_name" content="Amjac 的博客">
+<meta property="og:description" content="内存管理 Linux 内核采用分页管理方式，利用页目录和页表结构处理内存的申请和释放操作。内存管理以页面为单位进行的。一个内存页面指的是连续的 4KB 物理内存。  总体功能 80x86 架构下，程序在寻址过程中使用 段地址+段偏移 实现。而该地址并不能直接用于寻找物理地址，因此被称为虚拟地址。 虚拟地址首先通过段管理机制编程一种中间地址形式——32位的线性地址，然后使用分页管理机制将此线性地址">
+<meta property="og:locale" content="zh_CH">
+<meta property="og:image" content="https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2012041822190374.jpg">
+<meta property="og:image" content="https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/123444444.jpg">
+<meta property="og:image" content="https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2012041822181139.jpg">
+<meta property="og:image" content="https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2012041822174296.jpg">
+<meta property="article:published_time" content="2020-09-29T07:53:02.000Z">
+<meta property="article:modified_time" content="2021-06-30T09:15:20.101Z">
+<meta property="article:author" content="Amjac">
+<meta property="article:tag" content="Linux">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2012041822190374.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>【Linux 0.12】内存管理</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post " href="/2021/06/cmake/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post " href="/2020/09/%E5%86%85%E6%A0%B8%E4%BB%A3%E7%A0%81%E2%80%94%E2%80%94%E5%AD%90%E8%BF%9B%E7%A8%8B%E5%88%9B%E5%BB%BA/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&text=【Linux 0.12】内存管理"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&title=【Linux 0.12】内存管理"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&is_video=false&description=【Linux 0.12】内存管理"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【Linux 0.12】内存管理&body=Check out this article: https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&title=【Linux 0.12】内存管理"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&title=【Linux 0.12】内存管理"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&title=【Linux 0.12】内存管理"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&title=【Linux 0.12】内存管理"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&name=【Linux 0.12】内存管理&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&t=【Linux 0.12】内存管理"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text"> 内存管理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E4%BD%93%E5%8A%9F%E8%83%BD"><span class="toc-number">1.1.</span> <span class="toc-text"> 总体功能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E9%A1%B5%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6"><span class="toc-number">1.1.1.</span> <span class="toc-text"> 内存分页管理机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#linux-%E5%86%85%E6%A0%B8%E5%AF%B9%E7%BA%BF%E6%80%A7%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E7%9A%84%E4%BD%BF%E7%94%A8%E5%92%8C%E5%88%86%E9%85%8D"><span class="toc-number">1.1.2.</span> <span class="toc-text"> Linux 内核对线性地址空间的使用和分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5%E9%9D%A2%E5%87%BA%E9%94%99%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="toc-number">1.1.3.</span> <span class="toc-text"> 页面出错异常处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#memoryc-%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.2.</span> <span class="toc-text"> memory.c 程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pages-%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.3.</span> <span class="toc-text"> page.s 程序</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        【Linux 0.12】内存管理
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Amjac</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-09-29T07:53:02.000Z" itemprop="datePublished">2020-09-29</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/Linux%E5%AD%A6%E4%B9%A0/">Linux学习</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/Linux/" rel="tag">Linux</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <h1 id="内存管理"><a class="markdownIt-Anchor" href="#内存管理"></a> 内存管理</h1>
+<p>Linux 内核采用分页管理方式，利用页目录和页表结构处理内存的申请和释放操作。内存管理以<strong>页面</strong>为单位进行的。一个内存页面指的是连续的 4KB 物理内存。</p>
+<h2 id="总体功能"><a class="markdownIt-Anchor" href="#总体功能"></a> 总体功能</h2>
+<p>80x86 架构下，程序在寻址过程中使用 段地址+段偏移 实现。而该地址并不能直接用于寻找物理地址，因此被称为虚拟地址。</p>
+<p>虚拟地址首先通过段管理机制编程一种中间地址形式——32位的线性地址，然后使用分页管理机制将此线性地址映射到物理地址。</p>
+<h3 id="内存分页管理机制"><a class="markdownIt-Anchor" href="#内存分页管理机制"></a> 内存分页管理机制</h3>
+<p>intel x86 系统中，内存分页管理是通过<strong>页目录表</strong>和<strong>页表</strong>组成二级表进行的。</p>
+<p><img src="/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2012041822190374.jpg" alt="img"></p>
+<p>每个表的表项都是 4B，当指定了一个页目录表项和对应的页表项之后，我们就能唯一地确定所对应的物理内存页。</p>
+<p>1024 * 1024 * （1024 * 4）= 4 GB，因此所有页表最多可寻址 4G 的内存空间。</p>
+<p>在 Linux 0.12 内核中，所有进程都使用一个页目录表（位于物理地址 0x0 处），而每个进程都有自己的页表。内核代码段和数据段的长度是 16M，使用了 4 个页表（占用 4 个页目录项）。而这四个页表直接位于页目录表的后面，参见 head.s 程序。</p>
+<p>内核使用的 4 个页表项直接映射到对应的 16MB 物理地址上。也就是说对于内核段来说，线性地址就是物理地址（仅针对 0.12 内核而言）。</p>
+<p>用户态程序在申请物理内存时使用的是线性地址。线性地址映射到页目录、页表再到物理地址的方法如下图：</p>
+<p><img src="/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/123444444.jpg" alt="img"></p>
+<p><img src="/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2012041822181139.jpg" alt="img"></p>
+<p>一个系统中可以存在多个页目录表，而在某个时刻，只有一个页目录表可用。当前使用的页目录表是由 CPU 寄存器 CR3 来决定的，它保存了当前页目录表的物理内存地址。<strong>而 Linux 内核只使用了一个页目录表</strong>。</p>
+<p>页目录和页表项结构如下：</p>
+<p><img src="/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/2012041822174296.jpg" alt="img"></p>
+<h3 id="linux-内核对线性地址空间的使用和分配"><a class="markdownIt-Anchor" href="#linux-内核对线性地址空间的使用和分配"></a> Linux 内核对线性地址空间的使用和分配</h3>
+<blockquote>
+<p>因为使用内核版本 4.x 的 linux 系统时，每个进程所使用的线性地址空间（或者虚拟地址空间）为 4G，这使得我在阅读本章内容时产生了困扰。然而事实上，在 Linux 0.12 系统下，每个进程占用的逻辑空间为 64M。</p>
+</blockquote>
+<p>每个进程在线性地址空间的地址都是从 nr * 64MB 的位置开始的（nr 是任务号），占用的地址空间范围是 64MB。</p>
+<h3 id="页面出错异常处理"><a class="markdownIt-Anchor" href="#页面出错异常处理"></a> 页面出错异常处理</h3>
+<p>在开启了分页机制的状态下，CPU 在执行线性地址到物理地址的过程中，如果如果遇到以下条件，就会引起页出错异常中断 int 14：</p>
+<ol>
+<li>地址变换中用到的页目录项或者页表项的存在位 P 为 0 （代表该表项无效）</li>
+<li>当前程序没有足够的权限访问指定页面</li>
+</ol>
+<p>此时，CPU 将向页出错异常程序提供两个信息来协助诊断和纠正错误：</p>
+<ol>
+<li>栈中的出错码：一个 32 bit 的长字，但仅最低 3 bit 有用，分别是 P, W/R，和 U/S 位（和页表项的后 3 bit 相同）</li>
+<li>寄存器 CR2 中的线性地址。CPU 会将引起异常的访问使用的线性地址存放在 CR2 寄存器中。页出错异常处理程序可以使用这个地址来定位相关的页目录和页表项。</li>
+</ol>
+<p>其中，page.s 程序就利用上述信息来区分是缺页异常还是写保护异常，从而决定调用 memory.c 中的 <code>do_no_page()</code> 还是 <code>do_wp_page()</code> 函数。</p>
+<h2 id="memoryc-程序"><a class="markdownIt-Anchor" href="#memoryc-程序"></a> memory.c 程序</h2>
+<p>本程序进行内存分页的管理。</p>
+<p>内核使用一个字节数组 <code>mem_map[]</code> 表示物理内存页面的状态，每个字节描述一个物理内存页的占用状态，其值表示被占用的次数（？），0 表示对应的物理内存空闲。</p>
+<p>在内存初始化的过程中，系统首先计算 1MB 以上的内存区对应的内存页面数量（<code>PAGING_PAGES</code>）（1MB 以上的内存区域才会被分页管理），并将 <code>memm_map[]</code> 内表示高速缓存区和虚拟磁盘的页面置为 100（表示占用）；其余物理页面对应的值置为 0（可以被内存管理程序分配使用）。</p>
+<p>对于虚拟地址（逻辑地址）的管理，内核使用了页目录表和页表实现。</p>
+<p><code>get_free_page()</code> 函数和 <code>free_page()</code> 函数用于管理主内存区中物理内存的占用和空闲情况，与每个进程的线性地址无关。</p>
+<ul>
+<li>
+<p><code>get_free_page()</code> ：在主内存区申请一页空闲的内存页，并返回物理内存页的起始地址</p>
+<p>寻找 <code>mem_map[]</code> 中值为 0 的项。如果找到，则将值置为 1。</p>
+</li>
+<li>
+<p><code>free_page()</code> ：用于释放指定地址处的一页物理内存。</p>
+<p>先判断内存地址是否小于 1MB，是则直接返回（因为 1MB 以内是内核专用的内存）。如果给定的内存地址大于实际内存的最高地址，则显示出错信息。然后根据指定地址换算出页面号（页面在 mem_map[] 中的索引），查看对应的 <code>mem_map[]</code> 项是否为 0。不为 0 则 减一。</p>
+<blockquote>
+<p>只是单纯地处理了 <code>mem_map[]</code> 的项，这样做有什么意义？</p>
+<p>需要和 <code>free_page_taboes()</code> 配合使用。<code>free_page()</code> 函数在 <code>free_page_tables()</code> 中被调用，当处理页表项，将页表项对应的索引置为 0 时，也需要将 <code>mem_map[]</code> 表示的页面被引用的次数的值减一。所以 <code>free_page()</code> 只是一个单纯的工具人函数，不适合被独立调用（个人理解）</p>
+</blockquote>
+</li>
+</ul>
+<p><code>free_page_tables()</code> 和 <code>copy_page_tables()</code> 以一个页表对应的物理内存块为单位（1024 * 4K = 4MB）。</p>
+<ul>
+<li>
+<p><code>free_page_tables()</code> ：释放指定线性地址和长度（页表个数）对应的物理内存页块。首先必须保证指定地址在 4MB 的边界上，然后判断地址是否为 0 （是则出错返回）。</p>
+<blockquote>
+<p>为什么要以 4MB 为边界？前面的 1MB 不是内核专用吗？</p>
+<p>因为页目录的划分。前 1MB 也被划分在页目录的第一项里了。所以并不影响。</p>
+</blockquote>
+</li>
+<li>
+<p><code>copy_page_tables()</code> ：用于复制指定线性地址和长度（指页表的个数）对应的物理内存页。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">copy_page_tables</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">long</span> from,<span class="keyword">unsigned</span> <span class="keyword">long</span> to,<span class="keyword">long</span> size)</span></span>;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>本质上，from 和 to 代表的地址都对应某个页目录项。（所以它们是虚拟地址/逻辑地址/线性地址吗？）。然后将若干个页目录项（即对应页表）从 from 拷贝到 to。</p>
+<p>复制并不是对物理页面的内容进行复制，而是使两个页表的内容都指向了同一块物理内存，然后用写时复制处理。</p>
+</blockquote>
+</li>
+</ul>
+<p>虽然 Linux 0.12 使用了虚拟地址/线性地址，但是和近代内核不同，不同进程占用线性地址的不同区域。所以给出了一个线性地址，理论上是唯一的，仅被一个进程使用。</p>
+<h2 id="pages-程序"><a class="markdownIt-Anchor" href="#pages-程序"></a> page.s 程序</h2>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="toc-number">1.</span> <span class="toc-text"> 内存管理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E4%BD%93%E5%8A%9F%E8%83%BD"><span class="toc-number">1.1.</span> <span class="toc-text"> 总体功能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%88%86%E9%A1%B5%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6"><span class="toc-number">1.1.1.</span> <span class="toc-text"> 内存分页管理机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#linux-%E5%86%85%E6%A0%B8%E5%AF%B9%E7%BA%BF%E6%80%A7%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E7%9A%84%E4%BD%BF%E7%94%A8%E5%92%8C%E5%88%86%E9%85%8D"><span class="toc-number">1.1.2.</span> <span class="toc-text"> Linux 内核对线性地址空间的使用和分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5%E9%9D%A2%E5%87%BA%E9%94%99%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86"><span class="toc-number">1.1.3.</span> <span class="toc-text"> 页面出错异常处理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#memoryc-%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.2.</span> <span class="toc-text"> memory.c 程序</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#pages-%E7%A8%8B%E5%BA%8F"><span class="toc-number">1.3.</span> <span class="toc-text"> page.s 程序</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&text=【Linux 0.12】内存管理"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&title=【Linux 0.12】内存管理"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&is_video=false&description=【Linux 0.12】内存管理"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【Linux 0.12】内存管理&body=Check out this article: https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&title=【Linux 0.12】内存管理"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&title=【Linux 0.12】内存管理"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&title=【Linux 0.12】内存管理"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&title=【Linux 0.12】内存管理"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&name=【Linux 0.12】内存管理&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2020/09/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/&t=【Linux 0.12】内存管理"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Amjac
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>

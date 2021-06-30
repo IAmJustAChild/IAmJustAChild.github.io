@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="angr\sim_manager.py  SimulationManager类 注释：  simgr允许你以平滑的方式在多个SimState之间执行，多个State被组织为stashes，你可以单步执行（step forward），过滤（filter），合并（merge），以及任何你希望的方式执行。比如，simgr允许你以不同的速度单步执行不同的stashes，然后把它们合并。 注意：你不能直接用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【angr源码分析】5. SimulationManager">
+<meta property="og:url" content="https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/index.html">
+<meta property="og:site_name" content="Amjac 的博客">
+<meta property="og:description" content="angr\sim_manager.py  SimulationManager类 注释：  simgr允许你以平滑的方式在多个SimState之间执行，多个State被组织为stashes，你可以单步执行（step forward），过滤（filter），合并（merge），以及任何你希望的方式执行。比如，simgr允许你以不同的速度单步执行不同的stashes，然后把它们合并。 注意：你不能直接用">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2018-08-07T03:03:44.000Z">
+<meta property="article:modified_time" content="2021-06-30T09:29:22.060Z">
+<meta property="article:author" content="Amjac">
+<meta property="article:tag" content="angr源码分析">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>【angr源码分析】5. SimulationManager</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+		<script type="text/x-mathjax-config">
+		  MathJax.Hub.Config({
+			tex2jax: {
+			  skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+			  inlineMath: [['$','$']]
+			}
+		  });
+		</script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+	
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body class="max-width mx-auto px3 ltr">    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" "Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post " href="/2018/12/X-MASCTF-pwn/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post " href="/2018/08/angr-6.%20engines/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&text=【angr源码分析】5. SimulationManager"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&title=【angr源码分析】5. SimulationManager"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&is_video=false&description=【angr源码分析】5. SimulationManager"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【angr源码分析】5. SimulationManager&body=Check out this article: https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&title=【angr源码分析】5. SimulationManager"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&title=【angr源码分析】5. SimulationManager"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&title=【angr源码分析】5. SimulationManager"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&title=【angr源码分析】5. SimulationManager"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&name=【angr源码分析】5. SimulationManager&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&t=【angr源码分析】5. SimulationManager"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#simulationmanager%E7%B1%BB"><span class="toc-number">1.</span> <span class="toc-text"> SimulationManager类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#def-_init_"><span class="toc-number">1.1.</span> <span class="toc-text"> def _init_():</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#def-explore"><span class="toc-number">1.2.</span> <span class="toc-text"> def explore():</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#def-run"><span class="toc-number">1.3.</span> <span class="toc-text"> def run():</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#def-step"><span class="toc-number">1.4.</span> <span class="toc-text"> def step()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#def-step_state"><span class="toc-number">1.5.</span> <span class="toc-text"> def step_state():</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#def-successors"><span class="toc-number">1.6.</span> <span class="toc-text"> def successors():</span></a></li></ol></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        【angr源码分析】5. SimulationManager
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Amjac</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2018-08-07T03:03:44.000Z" itemprop="datePublished">2018-08-07</time>
+        
+      
+    </div>
+
+
+      
+    <div class="article-category">
+        <i class="fas fa-archive"></i>
+        <a class="category-link" href="/categories/%E5%B7%A5%E5%85%B7/">工具</a>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/angr%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="tag">angr源码分析</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>angr\sim_manager.py</p>
+<h1 id="simulationmanager类"><a class="markdownIt-Anchor" href="#simulationmanager类"></a> SimulationManager类</h1>
+<p>注释：</p>
+<blockquote>
+<p>simgr允许你以平滑的方式在多个SimState之间执行，多个State被组织为stashes，你可以单步执行（step forward），过滤（filter），合并（merge），以及任何你希望的方式执行。比如，simgr允许你以不同的速度单步执行不同的stashes，然后把它们合并。</p>
+<p>注意：你不能直接用构造器构造SimulationManager对象, 而是应当通过factory中的方法构造.</p>
+<p>值得注意的function包括: step, explore, 和 use_technique</p>
+</blockquote>
+<p>technique的概念：<a href="#">Post not found: 7. exploration_techniques</a></p>
+<p>stash的概念：Stash是多个SimState的集合。stash都被统一保存在类中的_stashes属性中。_stashes是一个字典，键是每个stash的name，值是一个list，保存这个stash中的simstate。</p>
+<h2 id="def-_init_"><a class="markdownIt-Anchor" href="#def-_init_"></a> def _<em>init</em>_():</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, </span></span></span><br><span class="line"><span class="params"><span class="function">             project, </span></span></span><br><span class="line"><span class="params"><span class="function">             active_states=<span class="literal">None</span>, <span class="comment"># to seed the &quot;active&quot; stash with ??***</span></span></span></span><br><span class="line"><span class="params"><span class="function">             stashes=<span class="literal">None</span>, <span class="comment">#作为 stash store??***</span></span></span></span><br><span class="line"><span class="params"><span class="function">             hierarchy=<span class="literal">None</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">             immutable=<span class="literal">False</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">             resilience=<span class="literal">None</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">             auto_drop=<span class="literal">None</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">             errored=<span class="literal">None</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">             completion_mode=<span class="built_in">any</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">             techniques=<span class="literal">None</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">             **kwargs</span>):</span></span><br></pre></td></tr></table></figure>
+<h2 id="def-explore"><a class="markdownIt-Anchor" href="#def-explore"></a> def explore():</h2>
+<p>注释：</p>
+<blockquote>
+<p>寻找满足条件或者不满足条件的stash，并把它们保存起来。找到的状态放入find_stash指定的属性，避免的状态放入avoid_stash指定的属性中。</p>
+<p>find参数和avoid参数可以是：</p>
+<ul>
+<li>想要找到或者避免达到的地址</li>
+<li>或者一个地址列表</li>
+<li>一个function：以state作为输入，返回一个bool类型，判断是否认可这个状态</li>
+</ul>
+<p>如果CFG被传入，且find和avoid参数都是以地址（int）类型传入，则所有先经过avoid地址，再到达find地址的state，也会被avoid。</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">explore</span>(<span class="params">self, </span></span></span><br><span class="line"><span class="params"><span class="function">            stash=<span class="string">&#x27;active&#x27;</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">            n=<span class="literal">None</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">            find=<span class="literal">None</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">            avoid=<span class="literal">None</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">            find_stash=<span class="string">&#x27;found&#x27;</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">            avoid_stash=<span class="string">&#x27;avoid&#x27;</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">            cfg=<span class="literal">None</span>,</span></span></span><br><span class="line"><span class="params"><span class="function">            num_find=<span class="number">1</span>, </span></span></span><br><span class="line"><span class="params"><span class="function">            **kwargs</span>):</span></span><br><span class="line">    num_find += <span class="built_in">len</span>(self._stashes[find_stash]) <span class="keyword">if</span> find_stash <span class="keyword">in</span> self._stashes <span class="keyword">else</span> <span class="number">0</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">#添加了一个technique:Explorer</span></span><br><span class="line">    tech = self.use_technique(Explorer(find, avoid, find_stash, avoid_stash, cfg, num_find))</span><br><span class="line"></span><br><span class="line">    <span class="comment">#实际调用了run方法。</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        self.run(stash=stash, n=n, **kwargs)</span><br><span class="line">    <span class="keyword">finally</span>:</span><br><span class="line">        self.remove_technique(tech)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> self</span><br></pre></td></tr></table></figure>
+<p>在simgr中调用explore方法，实际上是先加载Explorer technique，再调用run方法。传送门：<a href="./exploration_techniques.md">exploration_techniques</a></p>
+<h2 id="def-run"><a class="markdownIt-Anchor" href="#def-run"></a> def run():</h2>
+<p>注释：</p>
+<blockquote>
+<p>执行，直到SimManager到达了一个completed状态（根据当前设定的exploration techniques）</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">run</span>(<span class="params">self, stash=<span class="string">&#x27;active&#x27;</span>, n=<span class="literal">None</span>, until=<span class="literal">None</span>, **kwargs</span>):</span></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> (itertools.count() <span class="keyword">if</span> n <span class="keyword">is</span> <span class="literal">None</span> <span class="keyword">else</span> xrange(<span class="number">0</span>, n)):</span><br><span class="line">        <span class="comment">#.complete()：返回当前的manager是否到达了completed状态</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> self.complete() <span class="keyword">and</span> self._stashes[stash]:</span><br><span class="line">            <span class="comment">#调用 .step()</span></span><br><span class="line">            self.step(stash=stash, **kwargs)</span><br><span class="line">            <span class="keyword">if</span> <span class="keyword">not</span> (until <span class="keyword">and</span> until(self)):</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">return</span> self</span><br></pre></td></tr></table></figure>
+<p>实际上调用的是step方法。</p>
+<h2 id="def-step"><a class="markdownIt-Anchor" href="#def-step"></a> def step()</h2>
+<p>***bucket是个啥；猜测bucket是一个stash的集合，和_stashes是一个性质</p>
+<p>注释：</p>
+<blockquote>
+<p>单步执行stash中的所有state，然后把successors合理分类</p>
+<p>你可以控制单步执行的任何操作，以及分类处理的方法。</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">step</span>(<span class="params">self, </span></span></span><br><span class="line"><span class="params"><span class="function">         n=<span class="literal">None</span>, <span class="comment">#弃置</span></span></span></span><br><span class="line"><span class="params"><span class="function">         selector_func=<span class="literal">None</span>, <span class="comment">#输入state，返回bool，用来决定 state是否会</span></span></span></span><br><span class="line"><span class="params"><span class="function">         					<span class="comment">#步进，或者保持原状</span></span></span></span><br><span class="line"><span class="params"><span class="function">         step_func=<span class="literal">None</span>, <span class="comment">#输入simgr，返回simgr，每当单步执行的时候都会被调用。个人觉得就像钩子一样，每次单步执行之后，都可以执行自己的操作。***</span></span></span></span><br><span class="line"><span class="params"><span class="function">         stash=<span class="string">&#x27;active&#x27;</span>, <span class="comment">#要执行的stash名，默认是active</span></span></span></span><br><span class="line"><span class="params"><span class="function">         successor_func=<span class="literal">None</span>, <span class="comment">#输入state，返回successors，否则使用Project.factory.successors</span></span></span></span><br><span class="line"><span class="params"><span class="function">         until=<span class="literal">None</span>, <span class="comment">#弃置</span></span></span></span><br><span class="line"><span class="params"><span class="function">         filter_func=<span class="literal">None</span>, <span class="comment">#输入state，输出stash的名字，指明哪些state应当被执行。</span></span></span></span><br><span class="line"><span class="params"><span class="function">         **run_args</span>):</span></span><br><span class="line">    </span><br><span class="line">    l.info(<span class="string">&quot;Stepping %s of %s&quot;</span>, stash, self)</span><br><span class="line">    <span class="keyword">if</span> n <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span> <span class="keyword">or</span> until <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="comment">#n和until已经被弃置，因为它们被放入了run中。</span></span><br><span class="line">        ... ...</span><br><span class="line">    </span><br><span class="line">    bucket = defaultdict(<span class="built_in">list</span>)</span><br><span class="line">    <span class="comment">#对指定的stash里的所有state调用step</span></span><br><span class="line">    <span class="keyword">for</span> state <span class="keyword">in</span> self._fetch_states(stash=stash):</span><br><span class="line">        <span class="comment">#根据给出的筛选函数，选出指定的state来执行</span></span><br><span class="line">        goto = self.<span class="built_in">filter</span>(state, filter_func)</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">isinstance</span>(goto, <span class="built_in">tuple</span>):</span><br><span class="line">            goto, state = goto</span><br><span class="line">		<span class="comment">#在explorer插件下，goto必定是一个字符串（stash）</span></span><br><span class="line">        <span class="keyword">if</span> goto <span class="keyword">not</span> <span class="keyword">in</span> (<span class="literal">None</span>, stash):</span><br><span class="line">            bucket[goto].append(state)</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">#判断这个state要不要步进。不需要步进就加到某个地方***</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> self.selector(state, selector_func):</span><br><span class="line">            bucket[stash].append(state)</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">        pre_errored = <span class="built_in">len</span>(self._errored)</span><br><span class="line">        <span class="comment">#调用step_state，返回后继状态</span></span><br><span class="line">        successors = self.step_state(state, successor_func, **run_args)</span><br><span class="line">        </span><br><span class="line">        <span class="comment">#step_state之后，如果没有后继，就说明到了终止，加入deadended</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="built_in">any</span>(successors.itervalues()) <span class="keyword">and</span> <span class="built_in">len</span>(self._errored) == pre_errored:</span><br><span class="line">            bucket[<span class="string">&#x27;deadended&#x27;</span>].append(state)</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        <span class="comment">#step_state之后如果有后继（successors本质上也是stashes的集合）</span></span><br><span class="line">        <span class="keyword">for</span> to_stash, successor_states <span class="keyword">in</span> successors.iteritems():</span><br><span class="line">            bucket[to_stash <span class="keyword">or</span> stash].extend(successor_states)</span><br><span class="line">        </span><br><span class="line">    <span class="comment">#删除指定stash里的所有simstate（该stash似乎被删除）</span></span><br><span class="line">    self._clear_states(stash=stash)</span><br><span class="line">    </span><br><span class="line">    <span class="comment">#把bucket里的stash都保存到_stashes中</span></span><br><span class="line">    <span class="keyword">for</span> to_stash, states <span class="keyword">in</span> bucket.iteritems():</span><br><span class="line">        self._store_states(to_stash <span class="keyword">or</span> stash, states)</span><br><span class="line"></span><br><span class="line">    <span class="comment">#执行自己编写的step函数。最后执行。（类似hook）</span></span><br><span class="line">    <span class="keyword">if</span> step_func <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">return</span> step_func(self)</span><br><span class="line">    <span class="keyword">return</span> self</span><br></pre></td></tr></table></figure>
+<p>可以看到，step主要的操作由step_state完成：<code>successors = self.step_state(state, successor_func, **run_args)</code></p>
+<h2 id="def-step_state"><a class="markdownIt-Anchor" href="#def-step_state"></a> def step_state():</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">step_state</span>(<span class="params">self, state, successor_func=<span class="literal">None</span>, **run_args</span>):</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="comment">#直接调用successors()方法</span></span><br><span class="line">        successors = self.successors(state, successor_func, **run_args)</span><br><span class="line">        stashes = &#123;<span class="literal">None</span>: successors.flat_successors,</span><br><span class="line">                   <span class="string">&#x27;unsat&#x27;</span>: successors.unsat_successors,</span><br><span class="line">                   <span class="string">&#x27;unconstrained&#x27;</span>: successors.unconstrained_successors&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">except</span> ... :</span><br><span class="line">        ... ...</span><br><span class="line">    <span class="keyword">return</span> stashes</span><br></pre></td></tr></table></figure>
+<p>可以看出，step_state()相当于只对successors()方法增加了异常处理，把参数原封不动传递给successors()方法了，并对successors的返回值稍做处理。</p>
+<h2 id="def-successors"><a class="markdownIt-Anchor" href="#def-successors"></a> def successors():</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">successors</span>(<span class="params">self, state, successor_func=<span class="literal">None</span>, **run_args</span>):</span></span><br><span class="line">    <span class="keyword">if</span> successor_func <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">return</span> successor_func(state, **run_args)</span><br><span class="line">    <span class="keyword">return</span> self._project.factory.successors(state, **run_args)</span><br></pre></td></tr></table></figure>
+<p>也非常简洁，如果提供了successor_func，就使用提供的successor_func，否则，使用project.factory.successors。（回顾：successor_func的功能应当实现：给定一个state，返回successors，即实现step_state的核心功能。不明白为什么不能写得直接一些，从step到step_state到successors现在又要到factory里了。）</p>
+ <a href="#">Post not found: 1. Factory</a>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#simulationmanager%E7%B1%BB"><span class="toc-number">1.</span> <span class="toc-text"> SimulationManager类</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#def-_init_"><span class="toc-number">1.1.</span> <span class="toc-text"> def _init_():</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#def-explore"><span class="toc-number">1.2.</span> <span class="toc-text"> def explore():</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#def-run"><span class="toc-number">1.3.</span> <span class="toc-text"> def run():</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#def-step"><span class="toc-number">1.4.</span> <span class="toc-text"> def step()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#def-step_state"><span class="toc-number">1.5.</span> <span class="toc-text"> def step_state():</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#def-successors"><span class="toc-number">1.6.</span> <span class="toc-text"> def successors():</span></a></li></ol></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&text=【angr源码分析】5. SimulationManager"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&title=【angr源码分析】5. SimulationManager"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&is_video=false&description=【angr源码分析】5. SimulationManager"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=【angr源码分析】5. SimulationManager&body=Check out this article: https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&title=【angr源码分析】5. SimulationManager"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&title=【angr源码分析】5. SimulationManager"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&title=【angr源码分析】5. SimulationManager"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&title=【angr源码分析】5. SimulationManager"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&name=【angr源码分析】5. SimulationManager&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://iamjustachild.github.io/2018/08/angr-5.%20SimulationManager/&t=【angr源码分析】5. SimulationManager"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2021
+    Amjac
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">主页</a></li>
+         
+          <li><a href="/tags/">标签</a></li>
+         
+          <li><a href="/categories/">分类</a></li>
+         
+          <li><a href="/archives/">归档</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+</html>
