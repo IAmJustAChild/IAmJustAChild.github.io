@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://iamjustachild.github.io/2019/07/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E7%B3%BB%E7%BB%9F%E5%AF%84%E5%AD%98%E5%99%A8%E5%92%8C%E7%B3%BB%E7%BB%9F%E6%8C%87%E4%BB%A4/index.html">
 <meta property="og:site_name" content="Amjac 的博客">
 <meta property="og:description" content="[x] 什么是虚拟8086方式和保护模式？（EFLAGS的 VM标志位） [x] 如何理解，不开启分页，则线性地址等价于物理地址？   80x86保护模式及其编程  80x86 系统寄存器和系统指令 为了协助处理器执行初始化和控制系统操作，x86提供了一个标志寄存器EFLAGS 和几个系统控制器，除了一些通用的状态标志外，EFLAGS还包含几个系统标志。这些系统标志用于控制任务切换，中断处理，指">
-<meta property="og:locale" content="zh_CH">
+<meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://iamjustachild.github.io/2019/07/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E7%B3%BB%E7%BB%9F%E5%AF%84%E5%AD%98%E5%99%A8%E5%92%8C%E7%B3%BB%E7%BB%9F%E6%8C%87%E4%BB%A4/1342712354_1402-1564564213016.jpg">
 <meta property="og:image" content="https://iamjustachild.github.io/2019/07/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E7%B3%BB%E7%BB%9F%E5%AF%84%E5%AD%98%E5%99%A8%E5%92%8C%E7%B3%BB%E7%BB%9F%E6%8C%87%E4%BB%A4/110573_100126205236.jpg">
 <meta property="og:image" content="https://iamjustachild.github.io/2019/07/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E7%B3%BB%E7%BB%9F%E5%AF%84%E5%AD%98%E5%99%A8%E5%92%8C%E7%B3%BB%E7%BB%9F%E6%8C%87%E4%BB%A4/1564568247002.png">
@@ -63,9 +63,17 @@
 		</script>
 		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
 	
+  <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
 <meta name="generator" content="Hexo 5.4.0"></head>
 
-<body class="max-width mx-auto px3 ltr">    
+<body class="max-width mx-auto px3 ltr">
+    
       <div id="header-post">
   <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
   <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
@@ -74,11 +82,11 @@
     <span id="nav">
       <ul>
          
-          <li><a href="/">主页</a></li>
+          <li><a href="/">首页</a></li>
          
           <li><a href="/tags/">标签</a></li>
          
-          <li><a href="/categories/">分类</a></li>
+          <li><a href="/categories/">categorie</a></li>
          
           <li><a href="/archives/">归档</a></li>
         
@@ -88,18 +96,18 @@
     <span id="actions">
       <ul>
         
-        <li><a class="icon" aria-label="Previous post " href="/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E5%88%86%E6%AE%B5%E5%92%8C%E5%88%86%E9%A1%B5/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="上一篇 " href="/2019/08/80x86%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E2%80%94%E2%80%94%E5%88%86%E6%AE%B5%E5%92%8C%E5%88%86%E9%A1%B5/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
-        <li><a class="icon" aria-label="Next post " href="/2019/07/PLT%E8%A1%A8%E5%92%8CGOT%E8%A1%A8/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="下一篇 " href="/2019/07/PLT%E8%A1%A8%E5%92%8CGOT%E8%A1%A8/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
         
-        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
-        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+        <li><a class="icon" aria-label="返回顶部 " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章 " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
       </ul>
-      <span id="i-prev" class="info" style="display:none;">Previous post</span>
-      <span id="i-next" class="info" style="display:none;">Next post</span>
-      <span id="i-top" class="info" style="display:none;">Back to top</span>
-      <span id="i-share" class="info" style="display:none;">Share post</span>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
     </span>
     <br/>
     <div id="share" style="display: none">
@@ -259,11 +267,11 @@
     <div id="nav-footer" style="display: none">
       <ul>
          
-          <li><a href="/">主页</a></li>
+          <li><a href="/">首页</a></li>
          
           <li><a href="/tags/">标签</a></li>
          
-          <li><a href="/categories/">分类</a></li>
+          <li><a href="/categories/">categorie</a></li>
          
           <li><a href="/archives/">归档</a></li>
         
@@ -292,10 +300,10 @@
     </div>
 
     <div id="actions-footer">
-        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
-        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
-        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
-        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
     </div>
 
   </div>
@@ -314,11 +322,11 @@
     <nav>
       <ul>
          
-          <li><a href="/">主页</a></li>
+          <li><a href="/">首页</a></li>
          
           <li><a href="/tags/">标签</a></li>
          
-          <li><a href="/categories/">分类</a></li>
+          <li><a href="/categories/">categorie</a></li>
          
           <li><a href="/archives/">归档</a></li>
         
@@ -350,7 +358,7 @@
   <script type="text/javascript">
   $(function() {
     // copy-btn HTML
-    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板!\">";
     btn += '<i class="far fa-clone"></i>';
     btn += '</span>'; 
     // mount it!
@@ -361,7 +369,7 @@
       }
     });
     clip.on('success', function(e) {
-      e.trigger.setAttribute('aria-label', "Copied!");
+      e.trigger.setAttribute('aria-label', "复制成功!");
       e.clearSelection();
     })
   })
@@ -383,20 +391,5 @@
 <!-- Disqus Comments -->
 
 
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>

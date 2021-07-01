@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://iamjustachild.github.io/2019/07/%E6%A0%88%E6%BA%A2%E5%87%BA%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/index.html">
 <meta property="og:site_name" content="Amjac 的博客">
 <meta property="og:description" content="栈溢出基本原理  一、函数调用栈 函数调用栈是指程序运行时内存一段连续的区域，用来保存函数运行时的状态信息，包括函数参数与局部变量等。 栈由高地址向低地址扩展。（相对，堆由低地址向高地址扩展） 下图展示了函数调用发生和结束的时候发生的变化。调用函数，就向低地址扩展一个新的区域，作为被调函数栈。  函数栈的状态主要涉及三个寄存器——ESP，EBP，EIP。 ESP：栈顶地址 ESP：栈底地址 EI">
-<meta property="og:locale" content="zh_CH">
+<meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://iamjustachild.github.io/2019/07/%E6%A0%88%E6%BA%A2%E5%87%BA%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/v2-8d5649c36458080223084d77abbd554a_hd.png">
 <meta property="og:image" content="https://iamjustachild.github.io/2019/07/%E6%A0%88%E6%BA%A2%E5%87%BA%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/1564895810099.png">
 <meta property="og:image" content="https://iamjustachild.github.io/2019/07/%E6%A0%88%E6%BA%A2%E5%87%BA%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/1564896593119.png">
@@ -72,9 +72,17 @@
 		</script>
 		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
 	
+  <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
 <meta name="generator" content="Hexo 5.4.0"></head>
 
-<body class="max-width mx-auto px3 ltr">    
+<body class="max-width mx-auto px3 ltr">
+    
       <div id="header-post">
   <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
   <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
@@ -83,11 +91,11 @@
     <span id="nav">
       <ul>
          
-          <li><a href="/">主页</a></li>
+          <li><a href="/">首页</a></li>
          
           <li><a href="/tags/">标签</a></li>
          
-          <li><a href="/categories/">分类</a></li>
+          <li><a href="/categories/">categorie</a></li>
          
           <li><a href="/archives/">归档</a></li>
         
@@ -97,18 +105,18 @@
     <span id="actions">
       <ul>
         
-        <li><a class="icon" aria-label="Previous post " href="/2019/07/PLT%E8%A1%A8%E5%92%8CGOT%E8%A1%A8/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="上一篇 " href="/2019/07/PLT%E8%A1%A8%E5%92%8CGOT%E8%A1%A8/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
-        <li><a class="icon" aria-label="Next post " href="/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="下一篇 " href="/2019/07/heap%E5%88%A9%E7%94%A8%E6%8A%80%E6%9C%AF/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
         
-        <li><a class="icon" aria-label="Back to top " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
-        <li><a class="icon" aria-label="Share post " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+        <li><a class="icon" aria-label="返回顶部 " href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="分享文章 " href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
       </ul>
-      <span id="i-prev" class="info" style="display:none;">Previous post</span>
-      <span id="i-next" class="info" style="display:none;">Next post</span>
-      <span id="i-top" class="info" style="display:none;">Back to top</span>
-      <span id="i-share" class="info" style="display:none;">Share post</span>
+      <span id="i-prev" class="info" style="display:none;">上一篇</span>
+      <span id="i-next" class="info" style="display:none;">下一篇</span>
+      <span id="i-top" class="info" style="display:none;">返回顶部</span>
+      <span id="i-share" class="info" style="display:none;">分享文章</span>
     </span>
     <br/>
     <div id="share" style="display: none">
@@ -244,11 +252,11 @@
     <div id="nav-footer" style="display: none">
       <ul>
          
-          <li><a href="/">主页</a></li>
+          <li><a href="/">首页</a></li>
          
           <li><a href="/tags/">标签</a></li>
          
-          <li><a href="/categories/">分类</a></li>
+          <li><a href="/categories/">categorie</a></li>
          
           <li><a href="/archives/">归档</a></li>
         
@@ -277,10 +285,10 @@
     </div>
 
     <div id="actions-footer">
-        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
-        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
-        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
-        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> 菜单</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> 目录</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> 分享</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> 返回顶部</a>
     </div>
 
   </div>
@@ -299,11 +307,11 @@
     <nav>
       <ul>
          
-          <li><a href="/">主页</a></li>
+          <li><a href="/">首页</a></li>
          
           <li><a href="/tags/">标签</a></li>
          
-          <li><a href="/categories/">分类</a></li>
+          <li><a href="/categories/">categorie</a></li>
          
           <li><a href="/archives/">归档</a></li>
         
@@ -335,7 +343,7 @@
   <script type="text/javascript">
   $(function() {
     // copy-btn HTML
-    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"复制到粘贴板!\">";
     btn += '<i class="far fa-clone"></i>';
     btn += '</span>'; 
     // mount it!
@@ -346,7 +354,7 @@
       }
     });
     clip.on('success', function(e) {
-      e.trigger.setAttribute('aria-label', "Copied!");
+      e.trigger.setAttribute('aria-label', "复制成功!");
       e.clearSelection();
     })
   })
@@ -368,20 +376,5 @@
 <!-- Disqus Comments -->
 
 
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 </body>
 </html>
